@@ -8,6 +8,13 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card border-0 shadow-lg">
                     <div class="card-body p-5">
+                        <!-- Mensaje de error por acceso no autorizado -->
+                        @if (session('error'))
+                            <x-alert type="warning">
+                                {{ session('error') }}
+                            </x-alert>
+                        @endif
+
                         <div class="text-center mb-4">
                             <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
                                 <i class="fas fa-user-circle text-primary"></i>

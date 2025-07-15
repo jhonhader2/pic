@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 // ========================================
 // REGISTRO DE USUARIOS
 // ========================================
-Route::middleware('auth')->group(function () {
+Route::middleware('auth.redirect')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
@@ -40,7 +40,7 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth.redirect')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
@@ -59,12 +59,12 @@ Route::middleware('guest')->group(function () {
 // ========================================
 // VERIFICACIÓN DE EMAIL
 // ========================================
-Route::middleware(['auth', 'signed', 'throttle:6,1'])->group(function () {
+Route::middleware(['auth.redirect', 'signed', 'throttle:6,1'])->group(function () {
     Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
         ->name('verification.verify');
 });
 
-Route::middleware(['auth', 'throttle:6,1'])->group(function () {
+Route::middleware(['auth.redirect', 'throttle:6,1'])->group(function () {
     Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->name('verification.send');
 });
