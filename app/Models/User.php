@@ -45,4 +45,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the persona associated with the user.
+     */
+    public function persona()
+    {
+        return $this->hasOne(Persona::class);
+    }
 }
