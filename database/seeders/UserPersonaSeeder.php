@@ -32,7 +32,7 @@ class UserPersonaSeeder extends Seeder
                     'primer_apellido' => 'Acosta',
                     'segundo_apellido' => '',
                     'fecha_nacimiento' => '1985-03-15',
-                    'sexo' => false, // Masculino
+                    'sexo' => true, // Masculino
                     'identidad_genero' => 'NA',
                     'estado_civil' => 'Casado',
                     'telefono' => '6012345678',

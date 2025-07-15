@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('tipo_documento');
-            $table->string('numero_documento');
+            $table->string('numero_documento')->unique();
             $table->string('primer_nombre');
             $table->string('segundo_nombre')->nullable();
             $table->string('primer_apellido');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('identidad_genero')->nullable();
             $table->string('estado_civil');
             $table->string('telefono')->nullable();
-            $table->string('celular');
+            $table->string('celular')->unique();
             $table->string('tipo_sangre');
             $table->string('factor_rh');
             $table->boolean('afiliacion_salud')->default(true);

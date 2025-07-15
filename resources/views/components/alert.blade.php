@@ -1,4 +1,4 @@
-@props(['type' => 'info', 'dismissible' => true])
+@props(['type' => 'info', 'dismissible' => true, 'title' => null])
 
 @php
     $alertClasses = [
@@ -20,8 +20,15 @@
 @endphp
 
 <div class="alert {{ $alertClass }} {{ $dismissible ? 'alert-dismissible fade show' : '' }} mb-4" role="alert">
-    <i class="{{ $icon }} me-2"></i>
-    {{ $slot }}
+    <div class="d-flex align-items-start">
+        <i class="{{ $icon }} me-2 mt-1"></i>
+        <div class="flex-grow-1">
+            @if($title)
+                <strong>{{ $title }}</strong><br>
+            @endif
+            {{ $slot }}
+        </div>
+    </div>
 
     @if ($dismissible)
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

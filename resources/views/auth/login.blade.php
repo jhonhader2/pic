@@ -56,14 +56,6 @@
                                     </a>
                                 @endif
 
-                                @if (Route::has('register'))
-                                    <div class="mt-3">
-                                        <span class="text-muted">¿No tienes cuenta?</span>
-                                        <a href="{{ route('register') }}" class="text-decoration-none ms-1">
-                                            Regístrate aquí
-                                        </a>
-                                    </div>
-                                @endif
                             </div>
                         </form>
                     </div>

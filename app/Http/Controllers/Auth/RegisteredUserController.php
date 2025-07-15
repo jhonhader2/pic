@@ -9,7 +9,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +30,6 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        Log::info('Iniciando proceso de registro', ['data' => $request->all()]);
-
         // Validar campos básicos del usuario
         $request->validate([
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
@@ -45,16 +42,14 @@ class RegisteredUserController extends Controller
             'password.confirmed' => 'La confirmación de contraseña no coincide.',
         ]);
 
-        Log::info('Validación de usuario pasada');
-
         // Validar campos obligatorios de persona
         $request->validate([
             'primer_nombre' => ['required', 'string', 'max:255'],
             'primer_apellido' => ['required', 'string', 'max:255'],
             'tipo_documento' => ['required', 'string', 'max:255'],
             'numero_documento' => ['required', 'string', 'max:255'],
-            'fecha_nacimiento' => ['required', 'date'],
-            'sexo' => ['required', 'in:0,1'],
+            'fecha_nacimiento' => ['required', 'date', 'before:tomorrow'],
+            'sexo' => ['required', 'boolean'],
             'estado_civil' => ['required', 'string', 'max:255'],
             'celular' => ['required', 'string', 'max:20'],
             'tipo_sangre' => ['required', 'string', 'max:10'],
@@ -73,7 +68,7 @@ class RegisteredUserController extends Controller
             'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
             'fecha_nacimiento.date' => 'La fecha de nacimiento debe tener un formato válido.',
             'sexo.required' => 'El sexo es obligatorio.',
-            'sexo.in' => 'El sexo debe ser masculino o femenino.',
+            'sexo.boolean' => 'El sexo debe ser masculino o femenino.',
             'estado_civil.required' => 'El estado civil es obligatorio.',
             'celular.required' => 'El número de celular es obligatorio.',
             'tipo_sangre.required' => 'El tipo de sangre es obligatorio.',
@@ -89,8 +84,6 @@ class RegisteredUserController extends Controller
             'direccion.required' => 'La dirección es obligatoria.',
         ]);
 
-        Log::info('Validación de persona pasada');
-
         // Validar campos opcionales
         $request->validate([
             'segundo_nombre' => ['nullable', 'string', 'max:255'],
@@ -103,8 +96,6 @@ class RegisteredUserController extends Controller
             'nombre_etnia' => ['nullable', 'string', 'max:255'],
         ]);
 
-        Log::info('Todas las validaciones pasadas, iniciando transacción');
-
         DB::beginTransaction();
 
         try {
@@ -114,16 +105,12 @@ class RegisteredUserController extends Controller
                 $request->primer_apellido . ' ' .
                 ($request->segundo_apellido ? $request->segundo_apellido : ''));
 
-            Log::info('Nombre completo generado', ['nombre' => $nombreCompleto]);
-
             // Crear el usuario
             $user = User::create([
                 'name' => $nombreCompleto,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);
-
-            Log::info('Usuario creado', ['user_id' => $user->id]);
 
             // Crear la persona asociada
             $persona = $user->persona()->create([
@@ -153,27 +140,17 @@ class RegisteredUserController extends Controller
                 'direccion' => $request->direccion,
             ]);
 
-            Log::info('Persona creada', ['persona_id' => $persona->id]);
-
             event(new Registered($user));
 
             DB::commit();
 
-            Log::info('Registro completado exitosamente');
-
             return redirect(route('dashboard'))->with('success', 'Usuario registrado exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error en registro', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Hubo un problema al registrar el usuario: ' . $e->getMessage()]);
+                ->with('error', 'Hubo un problema al registrar el usuario: ' . $e->getMessage());
         }
     }
 }

@@ -22,6 +22,32 @@
             <div class="col-md-10 col-lg-8">
                 <div class="card border-0 shadow-lg rounded-3">
                     <div class="card-body p-5">
+                        <!-- Mensajes de error de validación -->
+                        <x-validation-errors :errors="$errors" />
+
+                        <!-- Mensaje de éxito -->
+                        @if (session('success'))
+                            <x-alert type="success">
+                                {{ session('success') }}
+                            </x-alert>
+                        @endif
+
+                        <!-- Mensaje de error general -->
+                        @if (session('error'))
+                            <x-alert type="error">
+                                {{ session('error') }}
+                            </x-alert>
+                        @endif
+
+                        <!-- Mensaje informativo cuando hay errores -->
+                        @if ($errors->any())
+                            <x-alert type="info" title="Información">
+                                Por favor, revisa los errores marcados en rojo y completa todos los campos requeridos.
+                                Los campos con errores están resaltados y las pestañas correspondientes se activarán
+                                automáticamente.
+                            </x-alert>
+                        @endif
+
                         <div class="text-center mb-4">
                             <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
                                 <i class="fas fa-user-plus text-primary" style="font-size: 32px;"></i>
@@ -95,7 +121,7 @@
                                             required icon="calendar-alt" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-select name="sexo" label="Sexo" :options="['1' => 'Masculino', '0' => 'Femenino']" required
+                                        <x-form-select name="sexo" label="Sexo" :options="\App\Helpers\SexoHelper::getOpciones()" required
                                             icon="venus-mars" />
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -340,6 +366,34 @@
                         }
                     });
                 });
+
+                // Mostrar errores del servidor en campos específicos
+                @if ($errors->any())
+                    @foreach ($errors->getMessages() as $field => $messages)
+                        const {{ $field }}Field = form.querySelector('[name="{{ $field }}"]');
+                        if ({{ $field }}Field) {
+                            {{ $field }}Field.classList.add('is-invalid');
+                            let errorDiv = {{ $field }}Field.parentNode.querySelector('.invalid-feedback');
+                            if (!errorDiv) {
+                                errorDiv = document.createElement('div');
+                                errorDiv.className = 'invalid-feedback d-block';
+                                {{ $field }}Field.parentNode.appendChild(errorDiv);
+                            }
+                            errorDiv.textContent = '{{ $messages[0] }}';
+
+                            // Activar la pestaña que contiene el campo con error
+                            const tabPane = {{ $field }}Field.closest('.tab-pane');
+                            if (tabPane) {
+                                const tabId = tabPane.id;
+                                const tabButton = document.querySelector(`[data-bs-target="#${tabId}"]`);
+                                if (tabButton) {
+                                    const tab = new bootstrap.Tab(tabButton);
+                                    tab.show();
+                                }
+                            }
+                        }
+                    @endforeach
+                @endif
             });
         </script>
     @endpush

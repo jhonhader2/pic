@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\SexoHelper;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,5 +66,13 @@ class Persona extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the sexo text attribute.
+     */
+    public function getSexoTextoAttribute(): string
+    {
+        return SexoHelper::getTexto($this->sexo);
     }
 }
