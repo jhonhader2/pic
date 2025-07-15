@@ -90,11 +90,24 @@ class RegisteredUserController extends Controller
             'segundo_apellido' => ['nullable', 'string', 'max:255'],
             'identidad_genero' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:20'],
-            'tipo_afiliacion_salud' => ['nullable', 'string', 'max:255'],
-            'eps' => ['nullable', 'string', 'max:255'],
-            'tipo_discapacidad' => ['nullable', 'string', 'max:255'],
             'nombre_etnia' => ['nullable', 'string', 'max:255'],
         ]);
+
+        // Validar campos de afiliación solo si afiliacion_salud es "Sí"
+        if ($request->afiliacion_salud == '1') {
+            $request->validate([
+                'tipo_afiliacion_salud' => ['nullable', 'string', 'max:255'],
+                'eps' => ['nullable', 'string', 'max:255'],
+            ]);
+        }
+
+        // Validar campos de discapacidad solo si discapacidad es "Sí"
+        if ($request->discapacidad == '1') {
+            $request->validate([
+                'tipo_discapacidad' => ['nullable', 'string', 'max:255'],
+                'atencion_integral_discapacidad' => ['required', 'in:0,1'],
+            ]);
+        }
 
         DB::beginTransaction();
 
@@ -129,11 +142,11 @@ class RegisteredUserController extends Controller
                 'tipo_sangre' => $request->tipo_sangre,
                 'factor_rh' => $request->factor_rh,
                 'afiliacion_salud' => $request->afiliacion_salud,
-                'tipo_afiliacion_salud' => $request->tipo_afiliacion_salud,
-                'eps' => $request->eps,
+                'tipo_afiliacion_salud' => $request->afiliacion_salud == '1' ? $request->tipo_afiliacion_salud : null,
+                'eps' => $request->afiliacion_salud == '1' ? $request->eps : null,
                 'discapacidad' => $request->discapacidad,
-                'tipo_discapacidad' => $request->tipo_discapacidad,
-                'atencion_integral_discapacidad' => $request->atencion_integral_discapacidad,
+                'tipo_discapacidad' => $request->discapacidad == '1' ? $request->tipo_discapacidad : null,
+                'atencion_integral_discapacidad' => $request->discapacidad == '1' ? $request->atencion_integral_discapacidad : null,
                 'pertenencia_etnica' => $request->pertenencia_etnica,
                 'nombre_etnia' => $request->nombre_etnia,
                 'barrio' => $request->barrio,

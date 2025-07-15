@@ -156,13 +156,13 @@
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <x-form-select name="afiliacion_salud" label="Afiliación Salud" :options="['1' => 'Sí', '0' => 'No']"
-                                            required icon="hospital" />
+                                            required icon="hospital" id="afiliacion_salud" />
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3" id="tipo_afiliacion_container">
                                         <x-form-input name="tipo_afiliacion_salud" label="Tipo de Afiliación Salud"
                                             placeholder="Contributivo, Subsidiado, etc." icon="hospital" />
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3" id="eps_container">
                                         <x-form-input name="eps" label="EPS" placeholder="Nombre de la EPS"
                                             icon="hospital" />
                                     </div>
@@ -171,13 +171,13 @@
                                 <x-form-tab-content id="disability">
                                     <div class="col-md-6 mb-3">
                                         <x-form-select name="discapacidad" label="Discapacidad" :options="['1' => 'Sí', '0' => 'No']" required
-                                            icon="wheelchair" />
+                                            icon="wheelchair" id="discapacidad" />
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3" id="tipo_discapacidad_container">
                                         <x-form-input name="tipo_discapacidad" label="Tipo de Discapacidad"
                                             placeholder="Tipo de discapacidad" icon="wheelchair" />
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3" id="atencion_integral_container">
                                         <x-form-select name="atencion_integral_discapacidad"
                                             label="Atención Integral Discapacidad" :options="['1' => 'Sí', '0' => 'No']" required
                                             icon="wheelchair" />
@@ -353,6 +353,68 @@
                         }
                     }
                 });
+
+                // Función para manejar la visibilidad de campos de afiliación
+                function toggleAfiliacionFields() {
+                    const afiliacionSelect = document.getElementById('afiliacion_salud');
+                    const tipoAfiliacionContainer = document.getElementById('tipo_afiliacion_container');
+                    const epsContainer = document.getElementById('eps_container');
+
+                    if (afiliacionSelect.value === '0') {
+                        // Ocultar campos si selecciona "No"
+                        tipoAfiliacionContainer.style.display = 'none';
+                        epsContainer.style.display = 'none';
+
+                        // Limpiar valores de los campos ocultos
+                        const tipoAfiliacionInput = tipoAfiliacionContainer.querySelector('input');
+                        const epsInput = epsContainer.querySelector('input');
+                        if (tipoAfiliacionInput) tipoAfiliacionInput.value = '';
+                        if (epsInput) epsInput.value = '';
+                    } else {
+                        // Mostrar campos si selecciona "Sí"
+                        tipoAfiliacionContainer.style.display = 'block';
+                        epsContainer.style.display = 'block';
+                    }
+                }
+
+                // Función para manejar la visibilidad de campos de discapacidad
+                function toggleDiscapacidadFields() {
+                    const discapacidadSelect = document.getElementById('discapacidad');
+                    const tipoDiscapacidadContainer = document.getElementById('tipo_discapacidad_container');
+                    const atencionIntegralContainer = document.getElementById('atencion_integral_container');
+
+                    if (discapacidadSelect.value === '0') {
+                        // Ocultar campos si selecciona "No"
+                        tipoDiscapacidadContainer.style.display = 'none';
+                        atencionIntegralContainer.style.display = 'none';
+
+                        // Limpiar valores de los campos ocultos
+                        const tipoDiscapacidadInput = tipoDiscapacidadContainer.querySelector('input');
+                        const atencionIntegralSelect = atencionIntegralContainer.querySelector('select');
+                        if (tipoDiscapacidadInput) tipoDiscapacidadInput.value = '';
+                        if (atencionIntegralSelect) atencionIntegralSelect.value = '';
+                    } else {
+                        // Mostrar campos si selecciona "Sí"
+                        tipoDiscapacidadContainer.style.display = 'block';
+                        atencionIntegralContainer.style.display = 'block';
+                    }
+                }
+
+                // Event listener para el campo de afiliación
+                const afiliacionSelect = document.getElementById('afiliacion_salud');
+                if (afiliacionSelect) {
+                    afiliacionSelect.addEventListener('change', toggleAfiliacionFields);
+                    // Ejecutar al cargar la página para establecer el estado inicial
+                    toggleAfiliacionFields();
+                }
+
+                // Event listener para el campo de discapacidad
+                const discapacidadSelect = document.getElementById('discapacidad');
+                if (discapacidadSelect) {
+                    discapacidadSelect.addEventListener('change', toggleDiscapacidadFields);
+                    // Ejecutar al cargar la página para establecer el estado inicial
+                    toggleDiscapacidadFields();
+                }
 
                 // Limpiar errores cuando el usuario empiece a escribir
                 form.querySelectorAll('input, select').forEach(field => {
