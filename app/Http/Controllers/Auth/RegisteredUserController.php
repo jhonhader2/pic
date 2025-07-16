@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Persona;
+use App\Helpers\TipoDocumentoHelper;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,41 +47,59 @@ class RegisteredUserController extends Controller
         $request->validate([
             'primer_nombre' => ['required', 'string', 'max:255'],
             'primer_apellido' => ['required', 'string', 'max:255'],
-            'tipo_documento' => ['required', 'string', 'max:255'],
+            'tipo_documento' => ['required', 'integer', 'exists:parametros,id'],
             'numero_documento' => ['required', 'string', 'max:255'],
             'fecha_nacimiento' => ['required', 'date', 'before:tomorrow'],
-            'sexo' => ['required', 'boolean'],
-            'estado_civil' => ['required', 'string', 'max:255'],
+            'sexo' => ['required', 'integer', 'exists:parametros,id'],
+            'identidad_genero' => ['required', 'integer', 'exists:parametros,id'],
+            'estado_civil' => ['required', 'integer', 'exists:parametros,id'],
             'celular' => ['required', 'string', 'max:20'],
-            'tipo_sangre' => ['required', 'string', 'max:10'],
-            'factor_rh' => ['required', 'string', 'max:20'],
+            'tipo_sangre' => ['required', 'integer', 'exists:parametros,id'],
+            'factor_rh' => ['required', 'integer', 'exists:parametros,id'],
             'afiliacion_salud' => ['required', 'in:0,1'],
             'discapacidad' => ['required', 'in:0,1'],
-            'atencion_integral_discapacidad' => ['required', 'in:0,1'],
-            'pertenencia_etnica' => ['required', 'string', 'max:255'],
-            'barrio' => ['required', 'string', 'max:255'],
+            'pertenencia_etnica' => ['required', 'integer', 'exists:parametros,id'],
+            'ocupacion' => ['required', 'integer', 'exists:parametros,id'],
+            'barrio' => ['required', 'integer', 'exists:parametros,id'],
             'direccion' => ['required', 'string', 'max:255'],
         ], [
             'primer_nombre.required' => 'El primer nombre es obligatorio.',
             'primer_apellido.required' => 'El primer apellido es obligatorio.',
             'tipo_documento.required' => 'El tipo de documento es obligatorio.',
+            'tipo_documento.integer' => 'El tipo de documento debe ser un valor válido.',
+            'tipo_documento.exists' => 'El tipo de documento seleccionado no es válido.',
             'numero_documento.required' => 'El número de documento es obligatorio.',
             'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
             'fecha_nacimiento.date' => 'La fecha de nacimiento debe tener un formato válido.',
             'sexo.required' => 'El sexo es obligatorio.',
-            'sexo.boolean' => 'El sexo debe ser masculino o femenino.',
+            'sexo.integer' => 'El sexo debe ser un valor válido.',
+            'sexo.exists' => 'El sexo seleccionado no es válido.',
+            'identidad_genero.required' => 'La identidad de género es obligatoria.',
+            'identidad_genero.integer' => 'La identidad de género debe ser un valor válido.',
+            'identidad_genero.exists' => 'La identidad de género seleccionada no es válida.',
             'estado_civil.required' => 'El estado civil es obligatorio.',
+            'estado_civil.integer' => 'El estado civil debe ser un valor válido.',
+            'estado_civil.exists' => 'El estado civil seleccionado no es válido.',
             'celular.required' => 'El número de celular es obligatorio.',
             'tipo_sangre.required' => 'El tipo de sangre es obligatorio.',
+            'tipo_sangre.integer' => 'El tipo de sangre debe ser un valor válido.',
+            'tipo_sangre.exists' => 'El tipo de sangre seleccionado no es válido.',
             'factor_rh.required' => 'El factor RH es obligatorio.',
+            'factor_rh.integer' => 'El factor RH debe ser un valor válido.',
+            'factor_rh.exists' => 'El factor RH seleccionado no es válido.',
             'afiliacion_salud.required' => 'La afiliación a salud es obligatoria.',
             'afiliacion_salud.in' => 'La afiliación a salud debe ser Sí o No.',
             'discapacidad.required' => 'El campo discapacidad es obligatorio.',
             'discapacidad.in' => 'El campo discapacidad debe ser Sí o No.',
-            'atencion_integral_discapacidad.required' => 'La atención integral de discapacidad es obligatoria.',
-            'atencion_integral_discapacidad.in' => 'La atención integral de discapacidad debe ser Sí o No.',
             'pertenencia_etnica.required' => 'La pertenencia étnica es obligatoria.',
+            'pertenencia_etnica.integer' => 'La pertenencia étnica debe ser un valor válido.',
+            'pertenencia_etnica.exists' => 'La pertenencia étnica seleccionada no es válida.',
+            'ocupacion.required' => 'La ocupación es obligatoria.',
+            'ocupacion.integer' => 'La ocupación debe ser un valor válido.',
+            'ocupacion.exists' => 'La ocupación seleccionada no es válida.',
             'barrio.required' => 'El barrio es obligatorio.',
+            'barrio.integer' => 'El barrio debe ser un valor válido.',
+            'barrio.exists' => 'El barrio seleccionado no es válido.',
             'direccion.required' => 'La dirección es obligatoria.',
         ]);
 
@@ -88,7 +107,6 @@ class RegisteredUserController extends Controller
         $request->validate([
             'segundo_nombre' => ['nullable', 'string', 'max:255'],
             'segundo_apellido' => ['nullable', 'string', 'max:255'],
-            'identidad_genero' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:20'],
             'nombre_etnia' => ['nullable', 'string', 'max:255'],
         ]);
@@ -96,16 +114,22 @@ class RegisteredUserController extends Controller
         // Validar campos de afiliación solo si afiliacion_salud es "Sí"
         if ($request->afiliacion_salud == '1') {
             $request->validate([
-                'tipo_afiliacion_salud' => ['nullable', 'string', 'max:255'],
-                'eps' => ['nullable', 'string', 'max:255'],
+                'tipo_afiliacion_salud' => ['nullable', 'integer', 'exists:parametros,id'],
+                'eps' => ['nullable', 'integer', 'exists:parametros,id'],
             ]);
         }
 
         // Validar campos de discapacidad solo si discapacidad es "Sí"
         if ($request->discapacidad == '1') {
             $request->validate([
-                'tipo_discapacidad' => ['nullable', 'string', 'max:255'],
+                'tipo_discapacidad' => ['required', 'integer', 'exists:parametros,id'],
                 'atencion_integral_discapacidad' => ['required', 'in:0,1'],
+            ], [
+                'tipo_discapacidad.required' => 'El tipo de discapacidad es obligatorio cuando presenta discapacidad.',
+                'tipo_discapacidad.integer' => 'El tipo de discapacidad debe ser un valor válido.',
+                'tipo_discapacidad.exists' => 'El tipo de discapacidad seleccionado no es válido.',
+                'atencion_integral_discapacidad.required' => 'La atención integral de discapacidad es obligatoria cuando presenta discapacidad.',
+                'atencion_integral_discapacidad.in' => 'La atención integral de discapacidad debe ser Sí o No.',
             ]);
         }
 
@@ -127,29 +151,30 @@ class RegisteredUserController extends Controller
 
             // Crear la persona asociada
             $persona = $user->persona()->create([
-                'tipo_documento' => $request->tipo_documento,
+                'tipo_documento_id' => $request->tipo_documento,
+                'sexo_id' => $request->sexo,
+                'estado_civil_id' => $request->estado_civil,
+                'tipo_sangre_id' => $request->tipo_sangre,
+                'factor_rh_id' => $request->factor_rh,
+                'pertenencia_etnica_id' => $request->pertenencia_etnica,
+                'ocupacion_id' => $request->ocupacion,
+                'barrio_id' => $request->barrio,
                 'numero_documento' => $request->numero_documento,
                 'primer_nombre' => $request->primer_nombre,
                 'segundo_nombre' => $request->segundo_nombre,
                 'primer_apellido' => $request->primer_apellido,
                 'segundo_apellido' => $request->segundo_apellido,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
-                'sexo' => $request->sexo,
-                'identidad_genero' => $request->identidad_genero,
-                'estado_civil' => $request->estado_civil,
+                'identidad_genero_id' => $request->identidad_genero,
                 'telefono' => $request->telefono,
                 'celular' => $request->celular,
-                'tipo_sangre' => $request->tipo_sangre,
-                'factor_rh' => $request->factor_rh,
-                'afiliacion_salud' => $request->afiliacion_salud,
-                'tipo_afiliacion_salud' => $request->afiliacion_salud == '1' ? $request->tipo_afiliacion_salud : null,
-                'eps' => $request->afiliacion_salud == '1' ? $request->eps : null,
-                'discapacidad' => $request->discapacidad,
-                'tipo_discapacidad' => $request->discapacidad == '1' ? $request->tipo_discapacidad : null,
-                'atencion_integral_discapacidad' => $request->discapacidad == '1' ? $request->atencion_integral_discapacidad : null,
-                'pertenencia_etnica' => $request->pertenencia_etnica,
+                'afiliacion_salud' => $request->afiliacion_salud == '1',
+                'tipo_afiliacion_salud_id' => $request->afiliacion_salud == '1' ? $request->tipo_afiliacion_salud : null,
+                'eps_id' => $request->afiliacion_salud == '1' ? $request->eps : null,
+                'discapacidad' => $request->discapacidad == '1',
+                'tipo_discapacidad_id' => $request->discapacidad == '1' ? $request->tipo_discapacidad : null,
+                'atencion_integral_discapacidad' => $request->discapacidad == '1' ? ($request->atencion_integral_discapacidad == '1') : false,
                 'nombre_etnia' => $request->nombre_etnia,
-                'barrio' => $request->barrio,
                 'direccion' => $request->direccion,
             ]);
 

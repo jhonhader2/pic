@@ -75,141 +75,148 @@
                             <div class="tab-content">
                                 <x-form-tab-content id="personal-info" :active="true">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="primer_nombre" label="Primer Nombre" placeholder="Ejemplo: Juan"
-                                            required icon="user" autofocus />
+                                        <x-form-input name="primer_nombre" id="primer_nombre" label="Primer Nombre"
+                                            placeholder="Juan" required icon="user" autofocus />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="segundo_nombre" label="Segundo Nombre" placeholder="Opcional"
-                                            icon="user" />
+                                        <x-form-input name="segundo_nombre" id="segundo_nombre" label="Segundo Nombre"
+                                            placeholder="Opcional" icon="user" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="primer_apellido" label="Primer Apellido"
-                                            placeholder="Ejemplo: Pérez" required icon="user" />
+                                        <x-form-input name="primer_apellido" id="primer_apellido" label="Primer Apellido"
+                                            placeholder="Pérez" required icon="user" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="segundo_apellido" label="Segundo Apellido"
+                                        <x-form-input name="segundo_apellido" id="segundo_apellido" label="Segundo Apellido"
                                             placeholder="Opcional" icon="user" />
                                     </div>
                                     <div class="col-md-12 mb-3">
-                                        <x-form-input name="email" label="Correo Electrónico" type="email"
-                                            placeholder="ejemplo@correo.com" required icon="envelope" />
+                                        <x-form-input name="email" id="email" label="Correo Electrónico"
+                                            type="email" placeholder="ejemplo@correo.com" required icon="envelope" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="password" label="Contraseña" type="password"
+                                        <x-form-input name="password" id="password" label="Contraseña" type="password"
                                             placeholder="Mínimo 8 caracteres" required icon="lock" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="password_confirmation" label="Confirmar Contraseña"
-                                            type="password" placeholder="Repite la contraseña" required icon="lock" />
+                                        <x-form-input name="password_confirmation" id="password_confirmation"
+                                            label="Confirmar Contraseña" type="password" placeholder="Repite la contraseña"
+                                            required icon="lock" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="documentation">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="tipo_documento" label="Tipo de Documento"
-                                            placeholder="Cédula, Pasaporte, etc." required icon="id-card" />
+                                        <x-form-select name="tipo_documento" id="tipo_documento" label="Tipo de Documento"
+                                            :options="\App\Helpers\TipoDocumentoHelper::getOpciones()" required icon="id-card" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="numero_documento" label="Número de Documento"
-                                            placeholder="Número de documento" required icon="id-card" />
+                                        <x-form-input name="numero_documento" id="numero_documento"
+                                            label="Número de Documento" placeholder="Número de documento" required
+                                            icon="id-card" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="personal-details">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="fecha_nacimiento" label="Fecha de Nacimiento" type="date"
-                                            required icon="calendar-alt" />
+                                        <x-form-input name="fecha_nacimiento" id="fecha_nacimiento"
+                                            label="Fecha de Nacimiento" type="date" required icon="calendar-alt" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-select name="sexo" label="Sexo" :options="\App\Helpers\SexoHelper::getOpciones()" required
-                                            icon="venus-mars" />
+                                        <x-form-select name="sexo" id="sexo" label="Sexo" :options="\App\Helpers\SexoHelper::getOpciones()"
+                                            required icon="venus-mars" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="identidad_genero" label="Identidad de Género"
-                                            placeholder="Identidad de género" icon="genderless" />
+                                        <x-form-select name="identidad_genero" id="identidad_genero"
+                                            label="Identidad de Género" :options="\App\Helpers\IdentidadGeneroHelper::getOpciones()" required icon="genderless" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="estado_civil" label="Estado Civil"
-                                            placeholder="Soltero, Casado, etc." required icon="heart" />
+                                        <x-form-select name="estado_civil" id="estado_civil" label="Estado Civil"
+                                            :options="\App\Helpers\EstadoCivilHelper::getOpciones()" required icon="heart" />
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <x-form-select name="ocupacion" id="ocupacion" label="Ocupación"
+                                            :options="\App\Helpers\OcupacionHelper::getOpciones()" required icon="briefcase" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="contact">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="telefono" label="Teléfono" placeholder="Número de teléfono"
-                                            icon="phone" />
+                                        <x-form-input name="telefono" id="telefono" label="Teléfono"
+                                            placeholder="Número de teléfono" icon="phone" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="celular" label="Celular" placeholder="Número de celular"
-                                            required icon="mobile-alt" />
+                                        <x-form-input name="celular" id="celular" label="Celular"
+                                            placeholder="Número de celular" required icon="mobile-alt" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="health">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="tipo_sangre" label="Tipo de Sangre"
-                                            placeholder="A+, O-, etc." required icon="tint" />
+                                        <x-form-select name="tipo_sangre" id="tipo_sangre" label="Tipo de Sangre"
+                                            :options="\App\Helpers\TipoSangreHelper::getOpciones()" required icon="tint" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="factor_rh" label="Factor RH" placeholder="Positivo, Negativo"
-                                            required icon="tint" />
+                                        <x-form-select name="factor_rh" id="factor_rh" label="Factor RH"
+                                            :options="\App\Helpers\FactorRhHelper::getOpciones()" required icon="tint" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-select name="afiliacion_salud" label="Afiliación Salud" :options="['1' => 'Sí', '0' => 'No']"
-                                            required icon="hospital" id="afiliacion_salud" />
+                                        <x-form-select name="afiliacion_salud" id="afiliacion_salud"
+                                            label="Afiliación Salud" :options="['1' => 'Sí', '0' => 'No']" required icon="hospital" />
                                     </div>
                                     <div class="col-md-6 mb-3" id="tipo_afiliacion_container">
-                                        <x-form-input name="tipo_afiliacion_salud" label="Tipo de Afiliación Salud"
-                                            placeholder="Contributivo, Subsidiado, etc." icon="hospital" />
+                                        <x-form-select name="tipo_afiliacion_salud" id="tipo_afiliacion_salud"
+                                            label="Tipo de Afiliación Salud" :options="\App\Helpers\TipoAfiliacionSaludHelper::getOpciones()" icon="hospital" />
                                     </div>
                                     <div class="col-md-6 mb-3" id="eps_container">
-                                        <x-form-input name="eps" label="EPS" placeholder="Nombre de la EPS"
+                                        <x-form-select name="eps" id="eps" label="EPS" :options="\App\Helpers\EpsHelper::getOpciones()"
                                             icon="hospital" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="disability">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-select name="discapacidad" label="Discapacidad" :options="['1' => 'Sí', '0' => 'No']" required
-                                            icon="wheelchair" id="discapacidad" />
+                                        <x-form-select name="discapacidad" id="discapacidad"
+                                            label="¿Presenta Discapacidad?" :options="['1' => 'Sí', '0' => 'No']" required
+                                            icon="wheelchair" />
                                     </div>
                                     <div class="col-md-6 mb-3" id="tipo_discapacidad_container">
-                                        <x-form-input name="tipo_discapacidad" label="Tipo de Discapacidad"
-                                            placeholder="Tipo de discapacidad" icon="wheelchair" />
+                                        <x-form-select name="tipo_discapacidad" id="tipo_discapacidad"
+                                            label="Tipo de Discapacidad" :options="\App\Helpers\TipoDiscapacidadHelper::getOpciones()" icon="wheelchair" />
                                     </div>
                                     <div class="col-md-6 mb-3" id="atencion_integral_container">
                                         <x-form-select name="atencion_integral_discapacidad"
-                                            label="Atención Integral Discapacidad" :options="['1' => 'Sí', '0' => 'No']" required
-                                            icon="wheelchair" />
+                                            id="atencion_integral_discapacidad" label="Atención Integral Discapacidad"
+                                            :options="['1' => 'Sí', '0' => 'No']" icon="wheelchair" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="cultural">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="pertenencia_etnica" label="Pertenencia Étnica"
-                                            placeholder="Pertenencia étnica" required icon="users" />
+                                        <x-form-select name="pertenencia_etnica" id="pertenencia_etnica"
+                                            label="Pertenencia Étnica" :options="\App\Helpers\PertenenciaEtnicaHelper::getOpciones()" required icon="users" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="nombre_etnia" label="Nombre Etnia"
+                                        <x-form-input name="nombre_etnia" id="nombre_etnia" label="Nombre Etnia"
                                             placeholder="Nombre de la etnia" icon="users" />
                                     </div>
                                 </x-form-tab-content>
 
                                 <x-form-tab-content id="location">
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="barrio" label="Barrio" placeholder="Barrio" required
-                                            icon="map-marker-alt" />
+                                        <x-form-select name="barrio" id="barrio" label="Barrio" :options="\App\Helpers\BarrioHelper::getOpciones()"
+                                            required icon="map-marker-alt" />
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <x-form-input name="direccion" label="Dirección" placeholder="Dirección" required
-                                            icon="map-marker-alt" />
+                                        <x-form-input name="direccion" id="direccion" label="Dirección"
+                                            placeholder="Dirección" required icon="map-marker-alt" />
                                     </div>
                                 </x-form-tab-content>
                             </div>
 
                             <!-- Botón de Envío -->
                             <div class="d-grid mb-3 mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                                <button type="submit" id="submit_register" class="btn btn-primary btn-lg rounded-pill">
                                     <i class="fas fa-user-plus me-2"></i>
                                     Crear Usuario
                                 </button>
@@ -217,7 +224,7 @@
 
                             <!-- Enlaces -->
                             <div class="text-center">
-                                <a href="{{ route('dashboard') }}" class="text-decoration-none">
+                                <a href="{{ route('dashboard') }}" id="back_to_dashboard" class="text-decoration-none">
                                     <i class="fas fa-arrow-left me-1"></i>
                                     Volver al Dashboard
                                 </a>
@@ -262,6 +269,21 @@
                     let firstInvalidField = null;
 
                     requiredFields.forEach(field => {
+                        // Validación condicional para campos de discapacidad
+                        if (field.name === 'atencion_integral_discapacidad' || field.name ===
+                            'tipo_discapacidad') {
+                            const discapacidadSelect = document.getElementById('discapacidad');
+                            if (discapacidadSelect && discapacidadSelect.value === '0') {
+                                // Si discapacidad es "No", estos campos no son obligatorios
+                                field.classList.remove('is-invalid');
+                                const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+                                if (errorDiv) {
+                                    errorDiv.remove();
+                                }
+                                return; // Saltar la validación para estos campos
+                            }
+                        }
+
                         if (!field.value.trim()) {
                             isValid = false;
                             field.classList.add('is-invalid');
@@ -382,6 +404,8 @@
                     const discapacidadSelect = document.getElementById('discapacidad');
                     const tipoDiscapacidadContainer = document.getElementById('tipo_discapacidad_container');
                     const atencionIntegralContainer = document.getElementById('atencion_integral_container');
+                    const tipoDiscapacidadSelect = document.getElementById('tipo_discapacidad');
+                    const atencionIntegralSelect = document.getElementById('atencion_integral_discapacidad');
 
                     if (discapacidadSelect.value === '0') {
                         // Ocultar campos si selecciona "No"
@@ -389,14 +413,42 @@
                         atencionIntegralContainer.style.display = 'none';
 
                         // Limpiar valores de los campos ocultos
-                        const tipoDiscapacidadInput = tipoDiscapacidadContainer.querySelector('input');
-                        const atencionIntegralSelect = atencionIntegralContainer.querySelector('select');
-                        if (tipoDiscapacidadInput) tipoDiscapacidadInput.value = '';
-                        if (atencionIntegralSelect) atencionIntegralSelect.value = '';
+                        if (tipoDiscapacidadSelect) {
+                            tipoDiscapacidadSelect.value = '';
+                            tipoDiscapacidadSelect.removeAttribute('required');
+                        }
+                        if (atencionIntegralSelect) {
+                            atencionIntegralSelect.value = '';
+                            atencionIntegralSelect.removeAttribute('required');
+                        }
+
+                        // Limpiar errores de validación
+                        if (tipoDiscapacidadSelect) {
+                            tipoDiscapacidadSelect.classList.remove('is-invalid');
+                            const errorDiv = tipoDiscapacidadSelect.parentNode.querySelector('.invalid-feedback');
+                            if (errorDiv) {
+                                errorDiv.remove();
+                            }
+                        }
+                        if (atencionIntegralSelect) {
+                            atencionIntegralSelect.classList.remove('is-invalid');
+                            const errorDiv = atencionIntegralSelect.parentNode.querySelector('.invalid-feedback');
+                            if (errorDiv) {
+                                errorDiv.remove();
+                            }
+                        }
                     } else {
                         // Mostrar campos si selecciona "Sí"
                         tipoDiscapacidadContainer.style.display = 'block';
                         atencionIntegralContainer.style.display = 'block';
+
+                        // Hacer obligatorios los campos de discapacidad
+                        if (tipoDiscapacidadSelect) {
+                            tipoDiscapacidadSelect.setAttribute('required', 'required');
+                        }
+                        if (atencionIntegralSelect) {
+                            atencionIntegralSelect.setAttribute('required', 'required');
+                        }
                     }
                 }
 
