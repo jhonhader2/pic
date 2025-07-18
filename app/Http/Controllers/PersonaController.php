@@ -2,16 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PersonaRequest;
+use App\Models\Persona;
+use App\Models\User;
+use App\Services\PersonaService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class PersonaController extends Controller
 {
+    public function __construct(
+        private PersonaService $personaService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $personas = Persona::with([
+            'user',
+            'tipoDocumento',
+            'sexo',
+            'estadoCivil',
+            'identidadGenero',
+            'tipoSangre',
+            'factorRh',
+            'tipoAfiliacionSalud',
+            'eps',
+            'tipoDiscapacidad',
+            'pertenenciaEtnica',
+            'ocupacion',
+            'barrio'
+        ])->paginate(15);
+
+        return view('personas.index', compact('personas'));
     }
 
     /**
@@ -19,85 +46,112 @@ class PersonaController extends Controller
      */
     public function create()
     {
-        //
+        return view('personas.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PersonaRequest $request): RedirectResponse
     {
-        // Validar los datos de entrada
-        $validatedData = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'tipo_documento' => 'required|string|max:255',
-            'numero_documento' => 'required|string|max:255',
-            'primer_nombre' => 'required|string|max:255',
-            'segundo_nombre' => 'nullable|string|max:255',
-            'primer_apellido' => 'required|string|max:255',
-            'segundo_apellido' => 'nullable|string|max:255',
-            'fecha_nacimiento' => 'required|date',
-            'sexo' => 'required|boolean',
-            'identidad_genero' => 'nullable|string|max:255',
-            'estado_civil' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:255',
-            'celular' => 'required|string|max:255',
-            'correo_electronico' => 'nullable|email|max:255',
-            'tipo_sangre' => 'required|string|max:255',
-            'factor_rh' => 'required|string|max:255',
-            'afiliacion_salud' => 'required|boolean',
-            'tipo_afiliacion_salud' => 'required|string|max:255',
-            'eps' => 'required|string|max:255',
-            'discapacidad' => 'required|boolean',
-            'tipo_discapacidad' => 'required|string|max:255',
-            'atencion_integral_discapacidad' => 'required|boolean',
-            'pertenencia_etnica' => 'required|string|max:255',
-            'nombre_etnia' => 'nullable|string|max:255',
-            'ocupacion' => 'nullable|string|max:255',
-            'barrio' => 'required|string|max:255',
-            'direccion' => 'required|string|max:255',
-            'foto' => 'nullable|image|max:2048',
-        ]);
+        try {
+            $user = Auth::user();
 
-        // Crear una nueva instancia de Persona
-        $persona = new \App\Models\Persona($validatedData);
+            if (!$user) {
+                return redirect()
+                    ->route('login')
+                    ->with('error', 'Debe iniciar sesión para crear una persona.');
+            }
 
-        // Guardar la persona en la base de datos
-        $persona->save();
+            // Crear persona según el rol del usuario
+            $result = $this->personaService->createPersonaByRole($request->validated());
 
-        // Redirigir o devolver una respuesta
-        return redirect()->route('personas.index')->with('success', 'Persona creada exitosamente.');
+            // Determinar el mensaje según el tipo de resultado
+            if ($result instanceof User) {
+                $message = 'Usuario y persona creados exitosamente.';
+            } else {
+                $message = 'Persona creada exitosamente.';
+            }
+
+            return redirect()
+                ->route('personas.index')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Error al crear la persona: ' . $e->getMessage());
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Persona $persona)
     {
-        //
+        $persona->load([
+            'user',
+            'tipoDocumento',
+            'sexo',
+            'estadoCivil',
+            'identidadGenero',
+            'tipoSangre',
+            'factorRh',
+            'tipoAfiliacionSalud',
+            'eps',
+            'tipoDiscapacidad',
+            'pertenenciaEtnica',
+            'ocupacion',
+            'barrio'
+        ]);
+
+        return view('personas.show', compact('persona'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Persona $persona)
     {
-        //
+        return view('personas.edit', compact('persona'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(PersonaRequest $request, Persona $persona): RedirectResponse
     {
-        //
+        try {
+            $persona->update($request->validated());
+
+            return redirect()
+                ->route('personas.index')
+                ->with('success', 'Persona actualizada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Error al actualizar la persona: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource.
      */
-    public function destroy(string $id)
+    public function destroy(Persona $persona): JsonResponse
     {
-        //
+        try {
+            $persona->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Persona eliminada exitosamente.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la persona: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

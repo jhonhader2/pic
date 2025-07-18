@@ -4,30 +4,43 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
+// =========================
+// RUTAS PÚBLICAS
+// =========================
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth.redirect'])->name('dashboard');
+// =========================
+// RUTAS DE AUTENTICACIÓN
+// =========================
+require __DIR__ . '/auth.php';
 
-// Rutas para manejo de errores
+// =========================
+// RUTAS DE ERRORES
+// =========================
 Route::get('/unauthorized', [App\Http\Controllers\ErrorController::class, 'unauthorized'])->name('unauthorized');
 Route::get('/forbidden', [App\Http\Controllers\ErrorController::class, 'forbidden'])->name('forbidden');
 Route::get('/not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('not-found');
 
-// Rutas de ejemplo para demostrar el sistema de autenticación
+// =========================
+// RUTAS PROTEGIDAS (AUTENTICACIÓN REQUERIDA)
+// =========================
 Route::middleware(['auth.redirect'])->group(function () {
-    // Ruta que requiere autenticación
+    // Dashboard principal
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // Perfil de usuario
     Route::get('/perfil', function () {
         return view('perfil');
     })->name('perfil');
 
-    // Ruta que requiere rol específico (ejemplo)
+    // Administración (requiere rol específico)
     Route::get('/admin', function () {
         return view('admin');
     })->middleware(['role:admin'])->name('admin');
-});
 
-require __DIR__ . '/auth.php';
+    // Gestión de personas (CRUD)
+    Route::resource('personas', App\Http\Controllers\PersonaController::class);
+});

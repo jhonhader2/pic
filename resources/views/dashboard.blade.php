@@ -34,19 +34,19 @@
         <!-- Dashboard Cards -->
         <div class="row g-4">
             <div class="col-md-6 col-lg-3">
-                <x-card title="0" subtitle="Pacientes" icon="users" color="primary" />
+                <x-card title="{{ $stats['total_usuarios'] }}" subtitle="Usuarios" icon="users" color="primary" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="0" subtitle="Citas Hoy" icon="calendar-check" color="success" />
+                <x-card title="{{ $stats['citas_hoy'] }}" subtitle="Citas Hoy" icon="calendar-check" color="success" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="0" subtitle="Reportes" icon="clipboard-list" color="warning" />
+                <x-card title="{{ $stats['reportes'] }}" subtitle="Reportes" icon="clipboard-list" color="warning" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="0" subtitle="Configuraciones" icon="cogs" color="info" />
+                <x-card title="{{ $stats['total_personas'] }}" subtitle="Personas" icon="user-friends" color="info" />
             </div>
         </div>
 
