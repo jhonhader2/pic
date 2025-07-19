@@ -43,4 +43,7 @@ Route::middleware(['auth.redirect'])->group(function () {
 
     // Gestión de personas (CRUD)
     Route::resource('personas', App\Http\Controllers\PersonaController::class);
+
+    // Gestión de encuestas (CRUD)
+    Route::resource('encuestas', App\Http\Controllers\EncuestaController::class);
 });

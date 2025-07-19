@@ -10,6 +10,26 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                @auth
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('personas.index') }}">
+                            <i class="fas fa-users me-1"></i>Personas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('encuestas.index') }}">
+                            <i class="fas fa-clipboard-list me-1"></i>Encuestas
+                        </a>
+                    </li>
+                @endauth
+            </ul>
+
             <ul class="navbar-nav ms-auto">
                 @auth
                     <li class="nav-item dropdown">

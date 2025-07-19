@@ -26,7 +26,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ParametroSeeder::class,
             TemaSeeder::class,
+            EncuestaTemaSeeder::class, // Nuevo seeder para preguntas de encuesta
             UserPersonaSeeder::class,
+            EncuestaSeeder::class, // Nuevo seeder para encuesta de prueba
         ]);
     }
 }
