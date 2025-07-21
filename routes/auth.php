@@ -21,26 +21,26 @@ use Illuminate\Support\Facades\Route;
 // ========================================
 // REGISTRO DE USUARIOS
 // ========================================
-Route::middleware('auth.redirect')->group(function () {
+Route::middleware(['auth.redirect', 'activity.logger'])->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
     Route::post('/register', [RegisteredUserController::class, 'store'])
-        ->name('register');
+        ->name('register.store');
 });
 
 // ========================================
 // SESIONES DE USUARIO
 // ========================================
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'activity.logger'])->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-        ->name('login');
+        ->name('login.store');
 });
 
-Route::middleware('auth.redirect')->group(function () {
+Route::middleware(['auth.redirect', 'activity.logger'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });

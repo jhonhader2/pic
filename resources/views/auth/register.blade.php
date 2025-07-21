@@ -56,7 +56,7 @@
                             <p class="text-muted">Complete la información del nuevo usuario</p>
                         </div>
 
-                        <form method="POST" action="{{ route('register') }}" id="registerForm" novalidate>
+                        <form method="POST" action="{{ route('register.store') }}" id="registerForm" novalidate>
                             @csrf
 
                             <!-- Nav tabs -->

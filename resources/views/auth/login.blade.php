@@ -23,7 +23,7 @@
                             <p class="text-muted">Accede a tu cuenta del PIC</p>
                         </div>
 
-                        <form method="POST" action="{{ route('login') }}">
+                        <form method="POST" action="{{ route('login.store') }}">
                             @csrf
 
                             <x-form-input name="email" label="Correo Electrónico" type="email"

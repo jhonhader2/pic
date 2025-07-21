@@ -32,6 +32,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     @stack('scripts')
+
+    <!-- Notificaciones en tiempo real -->
+    <script>
+        window.userId = {{ Auth::id() ?? 'null' }};
+    </script>
+    <script src="{{ asset('js/notifications.js') }}"></script>
 </body>
 
 </html>

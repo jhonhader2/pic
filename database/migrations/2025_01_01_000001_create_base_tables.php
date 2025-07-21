@@ -204,10 +204,26 @@ return new class extends Migration
             $table->id();
             $table->uuid('encuesta_id');
             $table->foreignId('tema_id')->constrained('temas')->onDelete('cascade');
+            $table->enum('tipo_pregunta', [
+                'seleccion_unica',
+                'seleccion_multiple',
+                'texto_corto',
+                'texto_largo',
+                'numero',
+                'fecha',
+                'escala',
+                'archivo'
+            ])->default('seleccion_unica');
+            $table->boolean('requerida')->default(true);
+            $table->text('descripcion_pregunta')->nullable();
+            $table->json('opciones_personalizadas')->nullable(); // Para opciones adicionales
+            $table->integer('orden')->default(0);
             $table->timestamps();
 
             $table->foreign('encuesta_id')->references('id')->on('encuestas')->onDelete('cascade');
             $table->index(['encuesta_id', 'tema_id']);
+            $table->index('tipo_pregunta');
+            $table->index('orden');
         });
     }
 

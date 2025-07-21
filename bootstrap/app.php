@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'auth.redirect' => \App\Http\Middleware\RedirectIfUnauthenticated::class,
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'activity.logger' => \App\Http\Middleware\ActivityLogger::class,
         ]);
 
         //

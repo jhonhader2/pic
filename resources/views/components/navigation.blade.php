@@ -32,6 +32,9 @@
 
             <ul class="navbar-nav ms-auto">
                 @auth
+                    <li class="nav-item">
+                        <x-notification-dropdown />
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-1"></i>

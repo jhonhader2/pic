@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class Encuesta extends Model
@@ -64,6 +65,38 @@ class Encuesta extends Model
                 $encuesta->titulo = strtoupper($encuesta->titulo);
             }
         });
+
+        // Invalidar cache cuando se crea, actualiza o elimina una encuesta
+        static::created(function ($encuesta) {
+            self::limpiarCacheEncuesta($encuesta);
+        });
+
+        static::updated(function ($encuesta) {
+            self::limpiarCacheEncuesta($encuesta);
+        });
+
+        static::deleted(function ($encuesta) {
+            self::limpiarCacheEncuesta($encuesta);
+        });
+    }
+
+    /**
+     * Limpia el cache relacionado con una encuesta específica
+     *
+     * @param Encuesta $encuesta
+     * @return void
+     */
+    private static function limpiarCacheEncuesta(Encuesta $encuesta): void
+    {
+        Cache::forget("encuesta_{$encuesta->id}_total_respuestas");
+        Cache::forget("encuesta_{$encuesta->id}_total_personas");
+        Cache::forget("encuesta_{$encuesta->id}_porcentaje_completado");
+
+        // Limpiar cache de listas que incluyen esta encuesta
+        Cache::forget('encuestas_activas');
+        Cache::forget('total_encuestas');
+        Cache::forget('dashboard_stats');
+        Cache::forget('estadisticas_sistema');
     }
 
     /**
@@ -90,6 +123,13 @@ class Encuesta extends Model
     public function temas()
     {
         return $this->belongsToMany(Tema::class, 'encuesta_temas')
+            ->withPivot([
+                'tipo_pregunta',
+                'requerida',
+                'descripcion_pregunta',
+                'opciones_personalizadas',
+                'orden'
+            ])
             ->withTimestamps();
     }
 
@@ -167,7 +207,11 @@ class Encuesta extends Model
      */
     public function getTotalRespuestasAttribute(): int
     {
-        return $this->respuestas()->count();
+        $cacheKey = "encuesta_{$this->id}_total_respuestas";
+
+        return Cache::remember($cacheKey, 900, function () {
+            return $this->respuestas()->count();
+        });
     }
 
     /**
@@ -175,7 +219,11 @@ class Encuesta extends Model
      */
     public function getTotalPersonasAsignadasAttribute(): int
     {
-        return $this->personas()->count();
+        $cacheKey = "encuesta_{$this->id}_total_personas";
+
+        return Cache::remember($cacheKey, 1800, function () {
+            return $this->personas()->count();
+        });
     }
 
     /**
@@ -183,13 +231,17 @@ class Encuesta extends Model
      */
     public function getPorcentajeCompletadoAttribute(): float
     {
-        $totalAsignadas = $this->total_personas_asignadas;
+        $cacheKey = "encuesta_{$this->id}_porcentaje_completado";
 
-        if ($totalAsignadas === 0) {
-            return 0.0;
-        }
+        return Cache::remember($cacheKey, 900, function () {
+            $totalAsignadas = $this->total_personas_asignadas;
 
-        return round(($this->total_respuestas / $totalAsignadas) * 100, 2);
+            if ($totalAsignadas === 0) {
+                return 0.0;
+            }
+
+            return round(($this->total_respuestas / $totalAsignadas) * 100, 2);
+        });
     }
 
     /**
