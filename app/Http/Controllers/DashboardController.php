@@ -38,4 +38,17 @@ class DashboardController extends Controller
 
         return view('dashboard', compact('stats'));
     }
+
+    /**
+     * Obtiene las estadísticas del dashboard en formato JSON
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function stats(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $force = $request->query('force', false);
+        $stats = $this->dashboardService->getStats($force);
+        return response()->json($stats);
+    }
 }

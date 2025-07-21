@@ -1,6 +1,6 @@
-@props(['title' => '', 'subtitle' => '', 'icon' => null, 'color' => 'primary'])
+@props(['title' => '', 'subtitle' => '', 'icon' => null, 'color' => 'primary', 'id' => null])
 
-<div class="card border-0 shadow-sm h-100">
+<div class="card border-0 shadow-sm h-100" @if($id) id="{{ $id }}" @endif>
     <div class="card-body p-4">
         <div class="d-flex align-items-center">
             @if ($icon)
@@ -10,7 +10,7 @@
             @endif
             <div>
                 @if ($title)
-                    <h3 class="fw-bold mb-1">{{ $title }}</h3>
+                    <h3 class="fw-bold mb-1" @if($id) id="{{ $id }}-title" @endif>{{ $title }}</h3>
                 @endif
                 @if ($subtitle)
                     <p class="text-muted mb-0">{{ $subtitle }}</p>

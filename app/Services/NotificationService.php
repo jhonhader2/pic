@@ -10,6 +10,7 @@ use App\Notifications\EncuestaRespondida;
 use App\Notifications\EncuestaExpirada;
 use App\Events\NotificationSent;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Servicio para manejar las notificaciones del sistema
@@ -31,8 +32,14 @@ class NotificationService
      */
     public function notificarEncuestaCreada(Encuesta $encuesta): void
     {
+        Log::info('Notificación: Iniciando notificarEncuestaCreada', ['encuesta_id' => $encuesta->id]);
         // Notificar al creador
-        $encuesta->creador->notify(new EncuestaCreated($encuesta));
+        if ($encuesta->creador) {
+            Log::info('Notificación: Notificando al creador', ['user_id' => $encuesta->creador->id]);
+            $encuesta->creador->notify(new \App\Notifications\EncuestaCreated($encuesta));
+        } else {
+            Log::warning('Notificación: La encuesta no tiene creador');
+        }
 
         // Notificar a las personas asignadas (si tienen usuario)
         $personasConUsuario = $encuesta->personas()
@@ -42,9 +49,15 @@ class NotificationService
 
         foreach ($personasConUsuario as $persona) {
             if ($persona->user) {
-                $persona->user->notify(new EncuestaCreated($encuesta));
+                Log::info('Notificación: Notificando a persona asignada', ['persona_id' => $persona->id, 'user_id' => $persona->user->id]);
+                $persona->user->notify(new \App\Notifications\EncuestaCreated($encuesta));
+            } else {
+                Log::warning('Notificación: Persona asignada sin usuario', ['persona_id' => $persona->id]);
             }
         }
+
+        // Disparar evento para actualización en tiempo real del dashboard
+        $this->dispararEventoDashboard($encuesta);
     }
 
     /**
@@ -191,5 +204,22 @@ class NotificationService
 
         // Disparar evento para notificación en tiempo real
         event(new NotificationSent($dbNotification));
+    }
+
+    /**
+     * Dispara evento para actualizar el dashboard en tiempo real
+     *
+     * @param Encuesta $encuesta
+     * @return void
+     */
+    private function dispararEventoDashboard(Encuesta $encuesta): void
+    {
+        // Limpiar cache del dashboard
+        \Illuminate\Support\Facades\Cache::forget('dashboard_stats');
+        \Illuminate\Support\Facades\Cache::forget('total_encuestas');
+        \Illuminate\Support\Facades\Cache::forget('encuestas_activas');
+
+        // Disparar evento para actualización en tiempo real
+        event(new \App\Events\DashboardUpdated($encuesta));
     }
 }

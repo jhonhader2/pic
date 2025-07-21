@@ -30,6 +30,8 @@ Route::middleware(['auth.redirect', 'activity.logger'])->group(function () {
     // Dashboard principal
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');
+    Route::get('/dashboard/stats', [App\Http\Controllers\DashboardController::class, 'stats'])
+        ->name('dashboard.stats');
 
     // Perfil de usuario
     Route::get('/perfil', function () {

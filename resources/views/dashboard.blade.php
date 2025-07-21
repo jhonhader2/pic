@@ -34,20 +34,20 @@
         <!-- Dashboard Cards -->
         <div class="row g-4">
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_usuarios'] }}" subtitle="Usuarios" icon="users" color="primary" />
+                <x-card title="{{ $stats['total_usuarios'] }}" subtitle="Usuarios" icon="users" color="primary" id="total-usuarios" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_personas'] }}" subtitle="Personas" icon="user-friends" color="info" />
+                <x-card title="{{ $stats['total_personas'] }}" subtitle="Personas" icon="user-friends" color="info" id="total-personas" />
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <x-card title="{{ $stats['total_encuestas'] }}" subtitle="Encuestas" icon="clipboard-list"
-                    color="warning" />
+                    color="warning" id="total-encuestas" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_respuestas'] }}" subtitle="Respuestas" icon="comments" color="success" />
+                <x-card title="{{ $stats['total_respuestas'] }}" subtitle="Respuestas" icon="comments" color="success" id="total-respuestas" />
             </div>
         </div>
 
@@ -55,12 +55,12 @@
         <div class="row g-4 mt-2">
             <div class="col-md-6 col-lg-3">
                 <x-card title="{{ $stats['encuestas_activas'] }}" subtitle="Encuestas Activas" icon="check-circle"
-                    color="success" />
+                    color="success" id="encuestas-activas" />
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <x-card title="{{ $stats['respuestas_hoy'] }}" subtitle="Respuestas Hoy" icon="calendar-day"
-                    color="info" />
+                    color="info" id="respuestas-hoy" />
             </div>
         </div>
 
@@ -228,7 +228,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Gráfico de Respuestas por Día
             const respuestasCtx = document.getElementById('respuestasChart').getContext('2d');
-            const respuestasChart = new Chart(respuestasCtx, {
+            window.respuestasChart = new Chart(respuestasCtx, {
                 type: 'line',
                 data: {
                     labels: ['Hace 6 días', 'Hace 5 días', 'Hace 4 días', 'Hace 3 días', 'Hace 2 días',
@@ -264,7 +264,7 @@
 
             // Gráfico de Estado de Encuestas
             const estadoCtx = document.getElementById('estadoEncuestasChart').getContext('2d');
-            const estadoChart = new Chart(estadoCtx, {
+            window.estadoChart = new Chart(estadoCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Activas', 'Pendientes', 'Expiradas'],

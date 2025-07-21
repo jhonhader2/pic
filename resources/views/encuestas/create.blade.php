@@ -8,10 +8,13 @@
         <x-session-alerts />
 
         <!-- Header -->
-        <x-page-header title="Crear Nueva Encuesta" subtitle="Complete el formulario para crear una nueva encuesta"
-            :actions="'<a href=\'' .
-                route('encuestas.index') .
-                '\' class=\'btn btn-secondary\'><i class=\'fas fa-arrow-left me-2\'></i>Volver</a>'" />
+        <x-page-header title="Crear Nueva Encuesta" subtitle="Complete el formulario para crear una nueva encuesta">
+            <x-slot name="actions">
+                <a href="{{ route('encuestas.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+            </x-slot>
+        </x-page-header>
 
         <!-- Formulario -->
         <x-card title="Información de la Encuesta" subtitle="Datos básicos de la nueva encuesta" icon="info-circle">

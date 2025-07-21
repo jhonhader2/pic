@@ -16,6 +16,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Actualizar dropdown de notificaciones
                 updateNotificationDropdown();
             });
+
+        // Suscribirse al canal público del dashboard
+        window.Echo.channel('dashboard')
+            .listen('DashboardUpdated', (e) => {
+                console.log('Dashboard actualizado:', e);
+
+                // Mostrar notificación toast
+                showNotificationToast(e);
+
+                // Actualizar estadísticas del dashboard si estamos en esa página
+                if (window.location.pathname === '/dashboard') {
+                    updateDashboardStats();
+                }
+            });
     }
 });
 
@@ -91,6 +105,56 @@ function updateNotificationDropdown() {
             }
         })
         .catch(error => console.error('Error actualizando dropdown:', error));
+}
+
+// Función para actualizar estadísticas del dashboard
+function updateDashboardStats() {
+    fetch('/dashboard/stats?force=1')
+        .then(response => response.json())
+        .then(data => {
+            // Actualizar contadores principales
+            updateCounter('total-encuestas', data.total_encuestas);
+            updateCounter('encuestas-activas', data.encuestas_activas);
+            updateCounter('total-respuestas', data.total_respuestas);
+            updateCounter('respuestas-hoy', data.respuestas_hoy);
+
+            // Actualizar gráficos si existen
+            if (window.respuestasChart) {
+                updateRespuestasChart(data.respuestas_ultimos_7_dias);
+            }
+            if (window.estadoChart) {
+                updateEstadoChart(data.encuestas_por_estado);
+            }
+        })
+        .catch(error => console.error('Error actualizando estadísticas:', error));
+}
+
+// Función para actualizar contadores
+function updateCounter(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+// Función para actualizar gráfico de respuestas
+function updateRespuestasChart(data) {
+    if (window.respuestasChart) {
+        window.respuestasChart.data.datasets[0].data = data;
+        window.respuestasChart.update();
+    }
+}
+
+// Función para actualizar gráfico de estado
+function updateEstadoChart(data) {
+    if (window.estadoChart) {
+        window.estadoChart.data.datasets[0].data = [
+            data.activas || 0,
+            data.pendientes || 0,
+            data.expiradas || 0
+        ];
+        window.estadoChart.update();
+    }
 }
 
 // Agregar estilos CSS para las animaciones

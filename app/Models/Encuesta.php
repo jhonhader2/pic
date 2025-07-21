@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use App\Events\DashboardUpdated;
 
 class Encuesta extends Model
 {
@@ -66,22 +67,25 @@ class Encuesta extends Model
             }
         });
 
-        // Invalidar cache cuando se crea, actualiza o elimina una encuesta
+        // Invalidar cache y disparar evento cuando se crea, actualiza o elimina una encuesta
         static::created(function ($encuesta) {
             self::limpiarCacheEncuesta($encuesta);
+            event(new DashboardUpdated($encuesta));
         });
 
         static::updated(function ($encuesta) {
             self::limpiarCacheEncuesta($encuesta);
+            event(new DashboardUpdated($encuesta));
         });
 
         static::deleted(function ($encuesta) {
             self::limpiarCacheEncuesta($encuesta);
+            event(new DashboardUpdated($encuesta));
         });
     }
 
     /**
-     * Limpia el cache relacionado con una encuesta específica
+     * Limpia el cache relacionado con una encuesta específica y el dashboard global
      *
      * @param Encuesta $encuesta
      * @return void
@@ -92,7 +96,7 @@ class Encuesta extends Model
         Cache::forget("encuesta_{$encuesta->id}_total_personas");
         Cache::forget("encuesta_{$encuesta->id}_porcentaje_completado");
 
-        // Limpiar cache de listas que incluyen esta encuesta
+        // Limpiar cache de listas y dashboard global
         Cache::forget('encuestas_activas');
         Cache::forget('total_encuestas');
         Cache::forget('dashboard_stats');

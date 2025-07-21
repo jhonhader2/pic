@@ -37,7 +37,7 @@
     <script>
         window.userId = {{ Auth::id() ?? 'null' }};
     </script>
-    <script src="{{ asset('js/notifications.js') }}"></script>
+    @vite(['resources/js/notifications.js'])
 </body>
 
 </html>

@@ -9,9 +9,9 @@
                     <p class="text-muted mb-0">{{ $subtitle }}</p>
                 @endif
             </div>
-            @if ($actions)
+            @if (isset($actions) || $slot->isNotEmpty())
                 <div class="d-flex gap-2">
-                    {{ $actions }}
+                    {{ $actions ?? $slot }}
                 </div>
             @endif
         </div>
