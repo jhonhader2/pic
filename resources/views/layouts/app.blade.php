@@ -48,7 +48,7 @@
         window.quitarPersona = function(personaId, nombrePersona) {
             // Verificar que SweetAlert2 esté disponible
             if (typeof Swal === 'undefined') {
-                if (confirm(`¿Está seguro de que desea quitar a "${nombrePersona}" de esta encuesta?`)) {
+                if (confirm(`¿Está seguro de que desea quitar a "${nombrePersona}" como aplicador de esta encuesta?`)) {
                     // Fallback a confirm nativo
                     submitRemoveForm(personaId);
                 }
@@ -57,7 +57,7 @@
 
             Swal.fire({
                 title: '¿Está seguro?',
-                text: `¿Está seguro de que desea quitar a "${nombrePersona}" de esta encuesta?`,
+                text: `¿Está seguro de que desea quitar a "${nombrePersona}" como aplicador de esta encuesta?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',

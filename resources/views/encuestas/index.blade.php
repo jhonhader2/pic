@@ -324,8 +324,12 @@
                                                     style="width: {{ $encuesta->porcentaje_completado }}%"></div>
                                             </div>
                                             <div class="small text-muted mt-1">
-                                                <i class="fas fa-users me-1"></i>{{ $encuesta->total_respuestas }} /
-                                                {{ $encuesta->total_personas_asignadas }} respuestas
+                                                <i class="fas fa-users me-1"></i>{{ $encuesta->total_respuestas }}
+                                                respuestas
+                                                <br>
+                                                <i
+                                                    class="fas fa-user-tie me-1"></i>{{ $encuesta->total_personas_asignadas }}
+                                                aplicadores
                                             </div>
                                         </div>
 

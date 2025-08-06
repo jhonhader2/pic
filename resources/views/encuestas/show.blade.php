@@ -70,6 +70,7 @@
                         </div>
                         <p><strong>Creada por:</strong> {{ $encuesta->creador->name }}</p>
                         <p><strong>Total de respuestas:</strong> {{ $encuesta->total_respuestas }}</p>
+                        <p><strong>Aplicadores asignados:</strong> {{ $encuesta->total_personas_asignadas }}</p>
                     </div>
                 </div>
             </div>
@@ -78,7 +79,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
-                            <i class="fas fa-users me-2"></i>Personas Asignadas
+                            <i class="fas fa-user-tie me-2"></i>Aplicadores Asignados
                             <span class="badge bg-primary ms-2">{{ $encuesta->personas->count() }}</span>
                         </h5>
                         <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
@@ -103,7 +104,7 @@
                                             </div>
                                             <button type="button" class="btn btn-outline-danger btn-sm"
                                                 onclick="quitarPersona('{{ $persona->id }}', '{{ $persona->primer_nombre }} {{ $persona->primer_apellido }}')"
-                                                title="Quitar persona">
+                                                title="Quitar aplicador">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
@@ -113,10 +114,10 @@
                         @else
                             <div class="text-center py-3">
                                 <i class="fas fa-users text-muted mb-2" style="font-size: 2rem;"></i>
-                                <p class="text-muted mb-2">No hay personas asignadas</p>
+                                <p class="text-muted mb-2">No hay aplicadores asignados</p>
                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#modalPersonas">
-                                    <i class="fas fa-plus me-1"></i>Asignar Personas
+                                    <i class="fas fa-plus me-1"></i>Asignar Aplicadores
                                 </button>
                             </div>
                         @endif
@@ -212,7 +213,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalPersonasLabel">
-                        <i class="fas fa-users me-2"></i>Gestionar Personas Asignadas
+                        <i class="fas fa-user-tie me-2"></i>Gestionar Aplicadores Asignados
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -221,13 +222,14 @@
                     @method('PUT')
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Seleccionar personas para asignar a la encuesta:</label>
+                            <label class="form-label fw-semibold">Seleccionar aplicadores para asignar a la
+                                encuesta:</label>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">
                                     <i class="fas fa-search"></i>
                                 </span>
                                 <input type="text" class="form-control" id="buscarPersonas"
-                                    placeholder="Buscar personas...">
+                                    placeholder="Buscar aplicadores...">
                             </div>
                         </div>
 
@@ -257,7 +259,7 @@
                         <div class="mt-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">
-                                    <span id="personasSeleccionadas">0</span> personas seleccionadas
+                                    <span id="personasSeleccionadas">0</span> aplicadores seleccionados
                                 </small>
                                 <div>
                                     <button type="button" class="btn btn-outline-secondary btn-sm"

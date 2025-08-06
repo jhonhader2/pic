@@ -66,6 +66,13 @@ class EncuestaController extends Controller
 
         $encuestas = $query->paginate(10)->withQueryString();
 
+        // Calcular totales para cada encuesta
+        $encuestas->getCollection()->transform(function ($encuesta) {
+            $encuesta->total_respuestas = $encuesta->respuestas()->count();
+            $encuesta->total_personas_asignadas = $encuesta->personas()->count();
+            return $encuesta;
+        });
+
         return view('encuestas.index', compact('encuestas'));
     }
 
@@ -132,6 +139,10 @@ class EncuestaController extends Controller
     {
         $encuesta->load(['temas.parametros', 'personas']);
         $todasLasPersonas = Persona::orderBy('primer_nombre')->get();
+
+        // Calcular totales
+        $encuesta->total_respuestas = $encuesta->respuestas()->count();
+        $encuesta->total_personas_asignadas = $encuesta->personas()->count();
 
         return view('encuestas.show', compact('encuesta', 'todasLasPersonas'));
     }

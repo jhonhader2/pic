@@ -214,11 +214,7 @@ class Encuesta extends Model
      */
     public function getTotalRespuestasAttribute(): int
     {
-        $cacheKey = "encuesta_{$this->id}_total_respuestas";
-
-        return Cache::remember($cacheKey, 900, function () {
-            return $this->respuestas()->count();
-        });
+        return $this->respuestas()->count();
     }
 
     /**
@@ -226,11 +222,7 @@ class Encuesta extends Model
      */
     public function getTotalPersonasAsignadasAttribute(): int
     {
-        $cacheKey = "encuesta_{$this->id}_total_personas";
-
-        return Cache::remember($cacheKey, 1800, function () {
-            return $this->personas()->count();
-        });
+        return $this->personas()->count();
     }
 
     /**
@@ -238,17 +230,13 @@ class Encuesta extends Model
      */
     public function getPorcentajeCompletadoAttribute(): float
     {
-        $cacheKey = "encuesta_{$this->id}_porcentaje_completado";
+        $totalAsignadas = $this->total_personas_asignadas;
 
-        return Cache::remember($cacheKey, 900, function () {
-            $totalAsignadas = $this->total_personas_asignadas;
+        if ($totalAsignadas === 0) {
+            return 0.0;
+        }
 
-            if ($totalAsignadas === 0) {
-                return 0.0;
-            }
-
-            return round(($this->total_respuestas / $totalAsignadas) * 100, 2);
-        });
+        return round(($this->total_respuestas / $totalAsignadas) * 100, 2);
     }
 
     /**
