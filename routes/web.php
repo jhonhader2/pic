@@ -65,6 +65,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/encuestas/{encuesta}/personas', [App\Http\Controllers\EncuestaController::class, 'detachPersona'])
         ->name('encuestas.personas.detach');
 
+    // Resultados de encuestas
+    Route::get('/encuestas/{encuesta}/resultados', [App\Http\Controllers\EncuestaController::class, 'resultados'])
+        ->name('encuestas.resultados');
+    Route::get('/encuestas/{encuesta}/resultados/export/{formato}', [App\Http\Controllers\EncuestaController::class, 'exportResultados'])
+        ->name('encuestas.resultados.export');
+
     // Gestión de notificaciones
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');

@@ -511,4 +511,283 @@ class EncuestaController extends Controller
                 ->with('error', 'Error al remover la persona de la encuesta: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Show survey results dashboard.
+     */
+    public function resultados(Encuesta $encuesta)
+    {
+        // Cargar relaciones necesarias
+        $encuesta->load(['temas.parametros', 'respuestas.detalleRespuestas']);
+
+        // Estadísticas generales
+        $totalRespuestas = $encuesta->respuestas()->count();
+        $totalPreguntas = $encuesta->temas()->count();
+        $totalPersonasAsignadas = $encuesta->personas()->count();
+        $porcentajeParticipacion = $totalPersonasAsignadas > 0 ? round(($totalRespuestas / $totalPersonasAsignadas) * 100, 1) : 0;
+        $diasActiva = $encuesta->fecha_inicio->diffInDays(now());
+
+        // Participación por día (últimos 30 días)
+        $participacionPorDia = $this->getParticipacionPorDia($encuesta);
+
+        // Resultados por pregunta
+        $resultadosPreguntas = $this->getResultadosPorPregunta($encuesta);
+
+        return view('encuestas.resultados', compact(
+            'encuesta',
+            'totalRespuestas',
+            'totalPreguntas',
+            'porcentajeParticipacion',
+            'diasActiva',
+            'participacionPorDia',
+            'resultadosPreguntas'
+        ));
+    }
+
+    /**
+     * Export survey results.
+     */
+    public function exportResultados(Encuesta $encuesta, $formato = 'pdf')
+    {
+        // Cargar relaciones necesarias
+        $encuesta->load(['temas.parametros', 'respuestas.detalleRespuestas']);
+
+        $totalRespuestas = $encuesta->respuestas()->count();
+        $totalPreguntas = $encuesta->temas()->count();
+        $totalPersonasAsignadas = $encuesta->personas()->count();
+        $porcentajeParticipacion = $totalPersonasAsignadas > 0 ? round(($totalRespuestas / $totalPersonasAsignadas) * 100, 1) : 0;
+        $diasActiva = $encuesta->fecha_inicio->diffInDays(now());
+        $participacionPorDia = $this->getParticipacionPorDia($encuesta);
+        $resultadosPreguntas = $this->getResultadosPorPregunta($encuesta);
+
+        $data = [
+            'encuesta' => $encuesta,
+            'totalRespuestas' => $totalRespuestas,
+            'totalPreguntas' => $totalPreguntas,
+            'porcentajeParticipacion' => $porcentajeParticipacion,
+            'diasActiva' => $diasActiva,
+            'participacionPorDia' => $participacionPorDia,
+            'resultadosPreguntas' => $resultadosPreguntas
+        ];
+
+        if ($formato === 'pdf') {
+            return $this->exportToPdf($data);
+        } else {
+            return $this->exportToExcel($data);
+        }
+    }
+
+    /**
+     * Get participation by day data.
+     */
+    private function getParticipacionPorDia(Encuesta $encuesta)
+    {
+        $fechaInicio = $encuesta->fecha_inicio;
+        $fechaFin = min($encuesta->fecha_fin, now());
+        $dias = $fechaInicio->diffInDays($fechaFin) + 1;
+
+        $labels = [];
+        $data = [];
+
+        for ($i = 0; $i < min($dias, 30); $i++) {
+            $fecha = $fechaInicio->copy()->addDays($i);
+            $labels[] = $fecha->format('d/m');
+
+            $respuestasDelDia = $encuesta->respuestas()
+                ->whereDate('created_at', $fecha)
+                ->count();
+
+            $data[] = $respuestasDelDia;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    /**
+     * Get results by question.
+     */
+    private function getResultadosPorPregunta(Encuesta $encuesta)
+    {
+        $resultados = [];
+
+        foreach ($encuesta->temas as $tema) {
+            $resultado = [
+                'pregunta' => $tema->name,
+                'descripcion' => $tema->pivot->descripcion_pregunta,
+                'tipo' => $tema->pivot->tipo_pregunta,
+                'opciones' => [],
+                'respuestas' => [],
+                'promedio' => 0,
+                'maximo' => 0,
+                'minimo' => 0,
+                'distribucion' => []
+            ];
+
+            // Obtener respuestas para esta pregunta
+            $detalleRespuestas = DetalleRespuesta::where('pregunta_id', $tema->id)
+                ->whereHas('respuesta', function ($query) use ($encuesta) {
+                    $query->where('encuesta_id', $encuesta->id);
+                })
+                ->get();
+
+            switch ($tema->pivot->tipo_pregunta) {
+                case 'seleccion_unica':
+                case 'seleccion_multiple':
+                    $resultado['opciones'] = $this->getOpcionesResultados($tema, $detalleRespuestas);
+                    break;
+
+                case 'escala':
+                    $resultado = array_merge($resultado, $this->getEscalaResultados($detalleRespuestas));
+                    break;
+
+                case 'numero':
+                    $resultado = array_merge($resultado, $this->getNumeroResultados($detalleRespuestas));
+                    break;
+
+                case 'texto_corto':
+                case 'texto_largo':
+                    $resultado['respuestas'] = $this->getTextoResultados($detalleRespuestas);
+                    break;
+
+                case 'fecha':
+                    $resultado['respuestas'] = $this->getFechaResultados($detalleRespuestas);
+                    break;
+
+                case 'archivo':
+                    $resultado['respuestas'] = $this->getArchivoResultados($detalleRespuestas);
+                    break;
+            }
+
+            $resultados[] = $resultado;
+        }
+
+        return $resultados;
+    }
+
+    /**
+     * Get options results for selection questions.
+     */
+    private function getOpcionesResultados($tema, $detalleRespuestas)
+    {
+        $opciones = [];
+        $totalRespuestas = $detalleRespuestas->count();
+
+        foreach ($tema->parametros as $parametro) {
+            $cantidad = $detalleRespuestas->where('parametro_id', $parametro->id)->count();
+            $porcentaje = $totalRespuestas > 0 ? round(($cantidad / $totalRespuestas) * 100, 1) : 0;
+
+            $opciones[] = [
+                'texto' => $parametro->name,
+                'cantidad' => $cantidad,
+                'porcentaje' => $porcentaje
+            ];
+        }
+
+        return $opciones;
+    }
+
+    /**
+     * Get scale results.
+     */
+    private function getEscalaResultados($detalleRespuestas)
+    {
+        $valores = $detalleRespuestas->pluck('respuesta')->filter()->map(function ($valor) {
+            return (int) $valor;
+        });
+
+        $distribucion = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $distribucion[] = [
+                'valor' => $i,
+                'cantidad' => $valores->filter(function ($valor) use ($i) {
+                    return $valor == $i;
+                })->count()
+            ];
+        }
+
+        return [
+            'promedio' => $valores->count() > 0 ? round($valores->avg(), 1) : 0,
+            'distribucion' => $distribucion
+        ];
+    }
+
+    /**
+     * Get number results.
+     */
+    private function getNumeroResultados($detalleRespuestas)
+    {
+        $valores = $detalleRespuestas->pluck('respuesta')->filter()->map(function ($valor) {
+            return (float) $valor;
+        });
+
+        return [
+            'promedio' => $valores->count() > 0 ? round($valores->avg(), 2) : 0,
+            'maximo' => $valores->count() > 0 ? $valores->max() : 0,
+            'minimo' => $valores->count() > 0 ? $valores->min() : 0
+        ];
+    }
+
+    /**
+     * Get text results.
+     */
+    private function getTextoResultados($detalleRespuestas)
+    {
+        return $detalleRespuestas->map(function ($detalle) {
+            return [
+                'respuesta' => $detalle->respuesta,
+                'fecha' => $detalle->created_at->format('d/m/Y H:i'),
+                'fecha_formateada' => $detalle->created_at->format('d/m/Y H:i')
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get date results.
+     */
+    private function getFechaResultados($detalleRespuestas)
+    {
+        return $detalleRespuestas->map(function ($detalle) {
+            return [
+                'respuesta' => $detalle->respuesta,
+                'fecha' => \Carbon\Carbon::parse($detalle->respuesta)->format('d/m/Y'),
+                'fecha_formateada' => \Carbon\Carbon::parse($detalle->respuesta)->format('d/m/Y')
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get file results.
+     */
+    private function getArchivoResultados($detalleRespuestas)
+    {
+        return $detalleRespuestas->map(function ($detalle) {
+            return [
+                'respuesta' => $detalle->ruta_archivo,
+                'nombre' => basename($detalle->ruta_archivo),
+                'fecha' => $detalle->created_at->format('d/m/Y H:i'),
+                'fecha_formateada' => $detalle->created_at->format('d/m/Y H:i')
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Export to PDF.
+     */
+    private function exportToPdf($data)
+    {
+        // Implementar exportación a PDF
+        return response()->json(['message' => 'Exportación PDF no implementada aún']);
+    }
+
+    /**
+     * Export to Excel.
+     */
+    private function exportToExcel($data)
+    {
+        // Implementar exportación a Excel
+        return response()->json(['message' => 'Exportación Excel no implementada aún']);
+    }
 }

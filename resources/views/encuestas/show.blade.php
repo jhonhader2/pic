@@ -18,6 +18,11 @@
                                 <i class="fas fa-edit me-2"></i>Responder Encuesta
                             </a>
                         @endif
+                        @if ($encuesta->total_respuestas > 0)
+                            <a href="{{ route('encuestas.resultados', $encuesta) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-chart-bar me-2"></i>Ver Resultados
+                            </a>
+                        @endif
                         <a href="{{ route('encuestas.preguntas.create', $encuesta) }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-cogs me-2"></i>Configurar Preguntas
                         </a>
