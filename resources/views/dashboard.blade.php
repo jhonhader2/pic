@@ -34,20 +34,23 @@
         <!-- Dashboard Cards -->
         <div class="row g-4">
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_usuarios'] }}" subtitle="Usuarios" icon="users" color="primary" id="total-usuarios" />
+                <x-card title="{{ $stats['total_usuarios'] }}" subtitle="Usuarios" icon="users" color="primary"
+                    id="total-usuarios" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_personas'] }}" subtitle="Personas" icon="user-friends" color="info" id="total-personas" />
+                <x-card title="{{ $stats['total_personas'] }}" subtitle="Personas" icon="user-friends" color="info"
+                    id="total-personas" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_encuestas'] }}" subtitle="Encuestas" icon="clipboard-list"
-                    color="warning" id="total-encuestas" />
+                <x-card title="{{ $stats['total_encuestas'] }}" subtitle="Encuestas" icon="clipboard-list" color="warning"
+                    id="total-encuestas" />
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['total_respuestas'] }}" subtitle="Respuestas" icon="comments" color="success" id="total-respuestas" />
+                <x-card title="{{ $stats['total_respuestas'] }}" subtitle="Respuestas" icon="comments" color="success"
+                    id="total-respuestas" />
             </div>
         </div>
 
@@ -59,8 +62,8 @@
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <x-card title="{{ $stats['respuestas_hoy'] }}" subtitle="Respuestas Hoy" icon="calendar-day"
-                    color="info" id="respuestas-hoy" />
+                <x-card title="{{ $stats['respuestas_hoy'] }}" subtitle="Respuestas Hoy" icon="calendar-day" color="info"
+                    id="respuestas-hoy" />
             </div>
         </div>
 
@@ -225,73 +228,14 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Gráfico de Respuestas por Día
-            const respuestasCtx = document.getElementById('respuestasChart').getContext('2d');
-            window.respuestasChart = new Chart(respuestasCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Hace 6 días', 'Hace 5 días', 'Hace 4 días', 'Hace 3 días', 'Hace 2 días',
-                        'Ayer', 'Hoy'
-                    ],
-                    datasets: [{
-                        label: 'Respuestas',
-                        data: {!! json_encode($stats['respuestas_ultimos_7_dias'] ?? [0, 0, 0, 0, 0, 0, 0]) !!},
-                        borderColor: '#0066CC',
-                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Gráfico de Estado de Encuestas
-            const estadoCtx = document.getElementById('estadoEncuestasChart').getContext('2d');
-            window.estadoChart = new Chart(estadoCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Activas', 'Pendientes', 'Expiradas'],
-                    datasets: [{
-                        data: [
-                            {{ $stats['encuestas_por_estado']['activas'] ?? 0 }},
-                            {{ $stats['encuestas_por_estado']['pendientes'] ?? 0 }},
-                            {{ $stats['encuestas_por_estado']['expiradas'] ?? 0 }}
-                        ],
-                        backgroundColor: [
-                            '#28a745',
-                            '#ffc107',
-                            '#dc3545'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        });
+        // Pasar datos del dashboard al JavaScript
+        window.dashboardStats = {
+            respuestas_ultimos_7_dias: {!! json_encode($stats['respuestas_ultimos_7_dias'] ?? [0, 0, 0, 0, 0, 0, 0]) !!},
+            encuestas_por_estado: {
+                activas: {{ $stats['encuestas_por_estado']['activas'] ?? 0 }},
+                pendientes: {{ $stats['encuestas_por_estado']['pendientes'] ?? 0 }},
+                expiradas: {{ $stats['encuestas_por_estado']['expiradas'] ?? 0 }}
+            }
+        };
     </script>
 @endpush

@@ -15,10 +15,10 @@
                         <p class="text-muted mb-0">{{ $encuesta->titulo }}</p>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('encuestas.show', $encuesta) }}" class="btn btn-secondary">
+                        <a href="{{ route('encuestas.show', $encuesta) }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-eye me-2"></i>Ver Encuesta
                         </a>
-                        <a href="{{ route('encuestas.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('encuestas.index') }}" class="btn btn-outline-secondary btn-sm">
                             <i class="fas fa-arrow-left me-2"></i>Volver
                         </a>
                     </div>
@@ -104,7 +104,7 @@
                                         <span id="tipos-seleccionados"></span>
                                     </div>
 
-                                    <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                                    <div class="temas-container">
                                         @if ($temas->count() > 0)
                                             @foreach ($temas as $tema)
                                                 <div class="tema-item mb-3 p-3 border rounded"
@@ -186,10 +186,11 @@
                                 <div class="col-12">
                                     <hr>
                                     <div class="d-flex justify-content-end gap-2">
-                                        <a href="{{ route('encuestas.show', $encuesta) }}" class="btn btn-secondary">
+                                        <a href="{{ route('encuestas.show', $encuesta) }}"
+                                            class="btn btn-secondary btn-sm">
                                             <i class="fas fa-times me-2"></i>Cancelar
                                         </a>
-                                        <button type="submit" class="btn btn-primary" id="btn-guardar" disabled>
+                                        <button type="submit" class="btn btn-primary btn-sm" id="btn-guardar" disabled>
                                             <i class="fas fa-save me-2"></i>Guardar Preguntas
                                         </button>
                                     </div>
@@ -205,189 +206,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tiposPregunta = @json($tiposPregunta);
-            const form = document.getElementById('preguntasForm');
-            const btnGuardar = document.getElementById('btn-guardar');
-            const seccionTemas = document.getElementById('seccion-temas');
-            const seccionConfiguracion = document.getElementById('seccion-configuracion');
-
-            let tiposSeleccionados = [];
-            let tiposConOpciones = [];
-            let tiposSinOpciones = [];
-
-            // Manejar selección de tipos de pregunta
-            document.querySelectorAll('.tipo-pregunta-radio').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    const tipo = this.value;
-                    const tipoInfo = tiposPregunta[tipo];
-
-                    if (this.checked) {
-                        // Agregar a la lista de tipos seleccionados
-                        if (!tiposSeleccionados.includes(tipo)) {
-                            tiposSeleccionados.push(tipo);
-                        }
-
-                        // Clasificar el tipo
-                        if (tipoInfo.requiere_opciones) {
-                            if (!tiposConOpciones.includes(tipo)) {
-                                tiposConOpciones.push(tipo);
-                            }
-                        } else {
-                            if (!tiposSinOpciones.includes(tipo)) {
-                                tiposSinOpciones.push(tipo);
-                            }
-                        }
-
-                        // Actualizar UI
-                        actualizarUI();
-                    }
-                });
-            });
-
-            // Manejar selección de temas
-            document.querySelectorAll('.tema-checkbox').forEach(function(checkbox) {
-                checkbox.addEventListener('change', function() {
-                    const temaItem = this.closest('.tema-item');
-                    const configuracion = temaItem.querySelector('.configuracion-tema');
-
-                    if (this.checked) {
-                        configuracion.style.display = 'block';
-                    } else {
-                        configuracion.style.display = 'none';
-                    }
-                });
-            });
-
-            function actualizarUI() {
-                // Actualizar información de tipos seleccionados
-                const tiposSeleccionadosSpan = document.getElementById('tipos-seleccionados');
-                const tiposSinOpcionesSpan = document.getElementById('tipos-sin-opciones');
-
-                if (tiposSeleccionadosSpan) {
-                    tiposSeleccionadosSpan.textContent = tiposSeleccionados.map(tipo => tiposPregunta[tipo].nombre)
-                        .join(', ');
-                }
-
-                if (tiposSinOpcionesSpan) {
-                    tiposSinOpcionesSpan.textContent = tiposSinOpciones.map(tipo => tiposPregunta[tipo].nombre)
-                        .join(', ');
-                }
-
-                // Mostrar/ocultar secciones
-                if (tiposConOpciones.length > 0) {
-                    seccionTemas.style.display = 'block';
-                } else {
-                    seccionTemas.style.display = 'none';
-                }
-
-                if (tiposSinOpciones.length > 0) {
-                    seccionConfiguracion.style.display = 'block';
-                    generarPreguntasGenericas();
-                } else {
-                    seccionConfiguracion.style.display = 'none';
-                }
-
-                // Habilitar/deshabilitar botón
-                btnGuardar.disabled = tiposSeleccionados.length === 0;
-            }
-
-            function generarPreguntasGenericas() {
-                const container = document.getElementById('preguntas-genericas');
-                container.innerHTML = '';
-
-                tiposSinOpciones.forEach((tipo, index) => {
-                    const tipoInfo = tiposPregunta[tipo];
-                    const preguntaDiv = document.createElement('div');
-                    preguntaDiv.className = 'pregunta-generica mb-4 p-3 border rounded';
-                    preguntaDiv.innerHTML = `
-                        <div class="d-flex align-items-start mb-3">
-                            <span class="badge bg-primary me-3">${index + 1}</span>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">${tipoInfo.nombre}</h6>
-                                <span class="badge bg-info">
-                                    <i class="${tipoInfo.icono} me-1"></i>${tipoInfo.nombre}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Título de la pregunta</label>
-                                <input type="text" 
-                                       name="titulos_genericos[${tipo}]" 
-                                       class="form-control form-control-sm" 
-                                       placeholder="Ej: ¿Cuál es su opinión sobre...?"
-                                       required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Descripción (Opcional)</label>
-                                <textarea name="descripciones_genericas[${tipo}]" 
-                                          class="form-control form-control-sm" 
-                                          rows="2" 
-                                          placeholder="Descripción adicional..."></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-3">
-                            <div class="form-check">
-                                <input type="checkbox" 
-                                       name="requeridas_genericas[${tipo}]" 
-                                       value="1" 
-                                       class="form-check-input" 
-                                       checked>
-                                <label class="form-check-label small">
-                                    <i class="fas fa-asterisk me-1"></i>Pregunta requerida
-                                </label>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(preguntaDiv);
-                });
-            }
-
-            // Validación del formulario
-            form.addEventListener('submit', function(e) {
-                if (tiposSeleccionados.length === 0) {
-                    e.preventDefault();
-                    alert('Debe seleccionar al menos un tipo de pregunta.');
-                    return false;
-                }
-
-                // Validar que se seleccionen temas si hay tipos que los requieren
-                if (tiposConOpciones.length > 0) {
-                    const temasSeleccionados = document.querySelectorAll('input[name="temas[]"]:checked');
-                    if (temasSeleccionados.length === 0) {
-                        e.preventDefault();
-                        alert(
-                            'Debe seleccionar al menos un tema para los tipos de pregunta que requieren opciones.');
-                        return false;
-                    }
-                }
-            });
-        });
+        // Pasar datos de tipos de pregunta al JavaScript
+        window.tiposPregunta = @json($tiposPregunta);
     </script>
-@endpush
-
-@push('styles')
-    <style>
-        .tipo-pregunta-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .tipo-pregunta-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        .tipo-pregunta-card.selected {
-            border-color: #0d6efd;
-            background-color: #f8f9ff;
-        }
-
-        .tipo-pregunta-radio:checked+label {
-            color: #0d6efd;
-        }
-    </style>
 @endpush

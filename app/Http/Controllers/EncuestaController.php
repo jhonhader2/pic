@@ -12,8 +12,8 @@ use App\Http\Requests\EncuestaRequest;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class EncuestaController extends Controller
@@ -29,79 +29,54 @@ class EncuestaController extends Controller
      */
     public function index(Request $request)
     {
-        // Generar clave de cache única basada en los filtros
-        $cacheKey = $this->generarClaveCacheEncuestas($request);
+        $query = Encuesta::with(['creador', 'personas', 'temas', 'respuestas']);
 
-        $encuestas = Cache::remember($cacheKey, 900, function () use ($request) {
-            $query = Encuesta::with(['creador', 'personas', 'temas', 'respuestas']);
-
-            // Filtro por estado
-            if ($request->has('estado') && $request->estado !== '') {
-                switch ($request->estado) {
-                    case 'activas':
-                        $query->activas();
-                        break;
-                    case 'disponibles':
-                        $query->disponibles();
-                        break;
-                    case 'expiradas':
-                        $query->where('fecha_fin', '<', now());
-                        break;
-                    case 'pendientes':
-                        $query->where('fecha_inicio', '>', now());
-                        break;
-                }
+        // Filtro por estado
+        if ($request->has('estado') && $request->estado !== '') {
+            switch ($request->estado) {
+                case 'activas':
+                    $query->activas();
+                    break;
+                case 'disponibles':
+                    $query->disponibles();
+                    break;
+                case 'expiradas':
+                    $query->where('fecha_fin', '<', now());
+                    break;
+                case 'pendientes':
+                    $query->where('fecha_inicio', '>', now());
+                    break;
             }
+        }
 
-            // Filtro por creador
-            if ($request->has('creador') && $request->creador !== '') {
-                $query->porCreador($request->creador);
-            }
+        // Filtro por creador
+        if ($request->has('creador') && $request->creador !== '') {
+            $query->porCreador($request->creador);
+        }
 
-            // Búsqueda por título
-            if ($request->has('buscar') && $request->buscar !== '') {
-                $query->where('titulo', 'ilike', '%' . $request->buscar . '%');
-            }
+        // Búsqueda por título
+        if ($request->has('buscar') && $request->buscar !== '') {
+            $query->where('titulo', 'ilike', '%' . $request->buscar . '%');
+        }
 
-            // Ordenamiento
-            $orden = $request->get('orden', 'created_at');
-            $direccion = $request->get('direccion', 'desc');
-            $query->orderBy($orden, $direccion);
+        // Ordenamiento
+        $orden = $request->get('orden', 'created_at');
+        $direccion = $request->get('direccion', 'desc');
+        $query->orderBy($orden, $direccion);
 
-            return $query->paginate(10)->withQueryString();
-        });
+        $encuestas = $query->paginate(10)->withQueryString();
 
         return view('encuestas.index', compact('encuestas'));
     }
 
-    /**
-     * Genera una clave única de cache para las consultas de encuestas
-     *
-     * @param Request $request
-     * @return string
-     */
-    private function generarClaveCacheEncuestas(Request $request): string
-    {
-        $filtros = [
-            'estado' => $request->get('estado', ''),
-            'creador' => $request->get('creador', ''),
-            'buscar' => $request->get('buscar', ''),
-            'orden' => $request->get('orden', 'created_at'),
-            'direccion' => $request->get('direccion', 'desc'),
-            'page' => $request->get('page', 1),
-        ];
 
-        return 'encuestas_list_' . md5(serialize($filtros));
-    }
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        $personas = Cache::remember('personas_list', 3600, function () {
-            return Persona::orderBy('primer_nombre')->get();
-        });
+        $personas = Persona::orderBy('primer_nombre')->get();
 
         return view('encuestas.create', compact('personas'));
     }
@@ -362,15 +337,53 @@ class EncuestaController extends Controller
      */
     public function edit(Encuesta $encuesta)
     {
-        //
+        $personas = Persona::orderBy('primer_nombre')->get();
+
+        // Cargar relaciones necesarias
+        $encuesta->load(['personas', 'temas']);
+
+        return view('encuestas.edit', compact('encuesta', 'personas'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Encuesta $encuesta)
+    public function update(EncuestaRequest $request, Encuesta $encuesta)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            // Actualizar datos básicos de la encuesta
+            $encuesta->update([
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+                'fecha_inicio' => $request->fecha_inicio,
+                'fecha_fin' => $request->fecha_fin,
+                'activa' => $request->has('activa'),
+                'updated_by' => Auth::id(),
+            ]);
+
+            // Actualizar personas asignadas
+            $personasData = [];
+            if ($request->has('personas') && !empty($request->personas)) {
+                foreach ($request->personas as $personaId) {
+                    $personasData[$personaId] = ['created_by' => Auth::id()];
+                }
+            }
+
+            // Sincronizar personas (elimina las que no están en la lista y agrega las nuevas)
+            $encuesta->personas()->sync($personasData);
+
+            DB::commit();
+
+            return redirect()->route('encuestas.show', $encuesta)
+                ->with('success', 'Encuesta actualizada exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withInput()
+                ->with('error', 'Error al actualizar la encuesta: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -378,6 +391,51 @@ class EncuestaController extends Controller
      */
     public function destroy(Encuesta $encuesta)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            // Eliminar respuestas asociadas
+            $respuestas = Respuesta::where('encuesta_id', $encuesta->id)->get();
+            foreach ($respuestas as $respuesta) {
+                // Eliminar detalles de respuesta
+                DetalleRespuesta::where('respuesta_id', $respuesta->id)->delete();
+                // Eliminar archivos físicos si existen
+                $this->eliminarArchivosRespuesta($respuesta);
+            }
+            Respuesta::where('encuesta_id', $encuesta->id)->delete();
+
+            // Desvincular temas y personas
+            $encuesta->temas()->detach();
+            $encuesta->personas()->detach();
+
+            // Eliminar la encuesta
+            $encuesta->delete();
+
+            DB::commit();
+
+            return redirect()->route('encuestas.index')
+                ->with('success', 'Encuesta eliminada exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->route('encuestas.index')
+                ->with('error', 'Error al eliminar la encuesta: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Elimina los archivos físicos asociados a una respuesta
+     */
+    private function eliminarArchivosRespuesta(Respuesta $respuesta): void
+    {
+        $detalles = DetalleRespuesta::where('respuesta_id', $respuesta->id)
+            ->whereNotNull('valor_archivo')
+            ->get();
+
+        foreach ($detalles as $detalle) {
+            if ($detalle->valor_archivo && Storage::disk('public')->exists($detalle->valor_archivo)) {
+                Storage::disk('public')->delete($detalle->valor_archivo);
+            }
+        }
     }
 }

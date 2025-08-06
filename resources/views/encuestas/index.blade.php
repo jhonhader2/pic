@@ -27,108 +27,144 @@
                         </h1>
                         <p class="text-muted mb-0">Gestiona las encuestas del sistema</p>
                     </div>
-                    <a href="{{ route('encuestas.create') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-plus me-2"></i>Nueva Encuesta
-                    </a>
+                    <div class="header-actions">
+                        <a href="{{ route('encuestas.create') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-2"></i>Nueva Encuesta
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Filtros y Búsqueda -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <x-card title="Filtros de Búsqueda" subtitle="Personaliza la búsqueda de encuestas" icon="search">
-                    <form method="GET" action="{{ route('encuestas.index') }}" class="row g-3">
-                        <!-- Búsqueda -->
-                        <div class="col-md-3">
-                            <x-form-input name="buscar" label="Buscar" placeholder="Buscar por título..." icon="search"
-                                value="{{ request('buscar') }}" />
+        @if ($encuestas->count() > 0)
+            <div class="row mb-4 filters-section">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center"
+                            style="cursor: pointer;" onclick="toggleFiltros()">
+                            <div>
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="fas fa-search me-2 text-primary"></i>Filtros de Búsqueda
+                                </h6>
+                                <small class="text-muted">Personaliza la búsqueda de encuestas</small>
+                            </div>
+                            <div>
+                                <i class="fas fa-chevron-down" id="filtrosIcon"></i>
+                            </div>
                         </div>
-
-                        <!-- Filtro por Estado -->
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="estado" class="form-label fw-semibold">Estado</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-filter"></i>
-                                    </span>
-                                    <select id="estado" name="estado" class="form-control">
-                                        <option value="">Todos los estados</option>
-                                        <option value="activas" {{ request('estado') == 'activas' ? 'selected' : '' }}>
-                                            Activas</option>
-                                        <option value="disponibles"
-                                            {{ request('estado') == 'disponibles' ? 'selected' : '' }}>Disponibles</option>
-                                        <option value="expiradas" {{ request('estado') == 'expiradas' ? 'selected' : '' }}>
-                                            Expiradas</option>
-                                        <option value="pendientes"
-                                            {{ request('estado') == 'pendientes' ? 'selected' : '' }}>Pendientes</option>
-                                    </select>
+                        <div class="card-body" id="filtrosContent" style="display: none;">
+                            <form method="GET" action="{{ route('encuestas.index') }}" class="row g-3">
+                                <!-- Búsqueda -->
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="buscar" class="form-label fw-semibold">Buscar</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="buscar" name="buscar"
+                                                placeholder="Buscar por título..." value="{{ request('buscar') }}">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Ordenamiento -->
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="orden" class="form-label fw-semibold">Ordenar por</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-sort"></i>
-                                    </span>
-                                    <select id="orden" name="orden" class="form-control">
-                                        <option value="created_at"
-                                            {{ request('orden', 'created_at') == 'created_at' ? 'selected' : '' }}>Fecha
-                                            de creación</option>
-                                        <option value="fecha_inicio"
-                                            {{ request('orden', 'created_at') == 'fecha_inicio' ? 'selected' : '' }}>Fecha
-                                            de inicio</option>
-                                        <option value="fecha_fin"
-                                            {{ request('orden', 'created_at') == 'fecha_fin' ? 'selected' : '' }}>Fecha
-                                            de fin</option>
-                                        <option value="titulo"
-                                            {{ request('orden', 'created_at') == 'titulo' ? 'selected' : '' }}>Título
-                                        </option>
-                                    </select>
+                                <!-- Filtro por Estado -->
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="estado" class="form-label fw-semibold">Estado</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-filter"></i>
+                                            </span>
+                                            <select id="estado" name="estado" class="form-control">
+                                                <option value="">Todos los estados</option>
+                                                <option value="activas"
+                                                    {{ request('estado') == 'activas' ? 'selected' : '' }}>
+                                                    Activas</option>
+                                                <option value="disponibles"
+                                                    {{ request('estado') == 'disponibles' ? 'selected' : '' }}>Disponibles
+                                                </option>
+                                                <option value="expiradas"
+                                                    {{ request('estado') == 'expiradas' ? 'selected' : '' }}>
+                                                    Expiradas</option>
+                                                <option value="pendientes"
+                                                    {{ request('estado') == 'pendientes' ? 'selected' : '' }}>Pendientes
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Dirección -->
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="direccion" class="form-label fw-semibold">Dirección</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-sort-amount-down"></i>
-                                    </span>
-                                    <select id="direccion" name="direccion" class="form-control">
-                                        <option value="desc"
-                                            {{ request('direccion', 'desc') == 'desc' ? 'selected' : '' }}>Descendente
-                                        </option>
-                                        <option value="asc"
-                                            {{ request('direccion', 'desc') == 'asc' ? 'selected' : '' }}>Ascendente
-                                        </option>
-                                    </select>
+                                <!-- Ordenamiento -->
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="orden" class="form-label fw-semibold">Ordenar por</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-sort"></i>
+                                            </span>
+                                            <select id="orden" name="orden" class="form-control">
+                                                <option value="created_at"
+                                                    {{ request('orden', 'created_at') == 'created_at' ? 'selected' : '' }}>
+                                                    Fecha
+                                                    de creación</option>
+                                                <option value="fecha_inicio"
+                                                    {{ request('orden', 'created_at') == 'fecha_inicio' ? 'selected' : '' }}>
+                                                    Fecha
+                                                    de inicio</option>
+                                                <option value="fecha_fin"
+                                                    {{ request('orden', 'created_at') == 'fecha_fin' ? 'selected' : '' }}>
+                                                    Fecha
+                                                    de fin</option>
+                                                <option value="titulo"
+                                                    {{ request('orden', 'created_at') == 'titulo' ? 'selected' : '' }}>
+                                                    Título
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Botones -->
-                        <div class="col-12">
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search me-2"></i>Filtrar
-                                </button>
-                                <a href="{{ route('encuestas.index') }}" class="btn btn-secondary">
-                                    <i class="fas fa-times me-2"></i>Limpiar
-                                </a>
-                            </div>
+                                <!-- Dirección -->
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="direccion" class="form-label fw-semibold">Dirección</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-sort-amount-down"></i>
+                                            </span>
+                                            <select id="direccion" name="direccion" class="form-control">
+                                                <option value="desc"
+                                                    {{ request('direccion', 'desc') == 'desc' ? 'selected' : '' }}>
+                                                    Descendente
+                                                </option>
+                                                <option value="asc"
+                                                    {{ request('direccion', 'desc') == 'asc' ? 'selected' : '' }}>
+                                                    Ascendente
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botones -->
+                                <div class="col-12">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-search me-2"></i>Filtrar
+                                        </button>
+                                        <a href="{{ route('encuestas.index') }}" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-times me-2"></i>Limpiar
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                    </form>
-                </x-card>
+                    </div>
+                </div>
             </div>
-        </div>
+        @endif
 
         <!-- Estadísticas Rápidas -->
         @if ($encuestas->count() > 0)
@@ -238,15 +274,10 @@
                                                         <hr class="dropdown-divider">
                                                     </li>
                                                     <li>
-                                                        <form action="{{ route('encuestas.destroy', $encuesta) }}"
-                                                            method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="dropdown-item text-danger"
-                                                                onclick="return confirm('¿Estás seguro de que quieres eliminar esta encuesta?')">
-                                                                <i class="fas fa-trash me-2"></i>Eliminar
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" class="dropdown-item text-danger"
+                                                            onclick="confirmarEliminacion('{{ route('encuestas.destroy', $encuesta) }}', '{{ $encuesta->titulo }}')">
+                                                            <i class="fas fa-trash me-2"></i>Eliminar
+                                                        </button>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -355,7 +386,7 @@
                         </div>
                         <h4 class="text-muted mb-3">No hay encuestas</h4>
                         <p class="text-muted mb-4">No se encontraron encuestas con los filtros aplicados.</p>
-                        <a href="{{ route('encuestas.create') }}" class="btn btn-primary btn-lg">
+                        <a href="{{ route('encuestas.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus me-2"></i>Crear primera encuesta
                         </a>
                     </div>
@@ -364,106 +395,5 @@
         </div>
     </div>
 
-    <style>
-        .hover-shadow:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-            transition: all 0.3s ease;
-        }
 
-        .card {
-            transition: all 0.3s ease;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .card-header {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .card-title {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .progress-bar {
-            transition: width 0.6s ease;
-        }
-
-        .badge {
-            font-size: 0.75rem;
-        }
-
-        /* Asegurar que el contenido no se desborde */
-        .card-body {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        /* Mejorar la legibilidad del texto */
-        .card-title {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            line-height: 1.3;
-        }
-
-        .card-body p {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            line-height: 1.4;
-        }
-
-        /* Asegurar que los elementos flex no se desborden */
-        .d-flex {
-            min-width: 0;
-        }
-
-        .flex-grow-1 {
-            min-width: 0;
-        }
-
-        /* Solucionar problema del dropdown */
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown-menu {
-            z-index: 1050 !important;
-            position: absolute !important;
-            margin-top: 0.125rem;
-        }
-
-        .card {
-            position: relative;
-            z-index: 1;
-        }
-
-        .card:hover {
-            z-index: 2;
-        }
-
-        /* Asegurar que el dropdown se muestre por encima de todo */
-        .dropdown.show .dropdown-menu {
-            z-index: 1060 !important;
-        }
-
-        /* Mejorar el posicionamiento del dropdown */
-        .dropdown-menu-end {
-            right: 0;
-            left: auto;
-        }
-
-        /* Asegurar que las cards no interfieran con el dropdown */
-        .col-lg-6,
-        .col-xl-4 {
-            position: relative;
-        }
-
-        /* Mejorar la visibilidad del dropdown */
-        .dropdown-menu {
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(0, 0, 0, 0.125);
-        }
-    </style>
 @endsection

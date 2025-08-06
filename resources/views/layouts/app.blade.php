@@ -15,14 +15,16 @@
     @stack('styles')
 </head>
 
-<body style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh;">
+<body class="d-flex flex-column min-vh-100" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
 
     <!-- Navigation -->
     @include('components.navigation')
 
     <!-- Main Content -->
-    <main>
-        @yield('content')
+    <main class="flex-grow-1 content-wrapper">
+        <div class="page-content">
+            @yield('content')
+        </div>
     </main>
 
     <!-- Footer -->
@@ -30,6 +32,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @stack('scripts')
 

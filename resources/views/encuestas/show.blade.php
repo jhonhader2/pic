@@ -14,11 +14,14 @@
                     </div>
                     <div class="d-flex gap-2">
                         @if ($encuesta->estaDisponible())
-                            <a href="{{ route('encuestas.responder', $encuesta) }}" class="btn btn-success">
+                            <a href="{{ route('encuestas.responder', $encuesta) }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-edit me-2"></i>Responder Encuesta
                             </a>
                         @endif
-                        <a href="{{ route('encuestas.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('encuestas.preguntas.create', $encuesta) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-cogs me-2"></i>Configurar Preguntas
+                        </a>
+                        <a href="{{ route('encuestas.index') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left me-2"></i>Volver
                         </a>
                     </div>
@@ -105,10 +108,19 @@
         <div class="row">
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-question-circle me-2"></i>Preguntas de la Encuesta
+                            @if ($encuesta->temas->count() > 0)
+                                <span class="badge bg-success ms-2">{{ $encuesta->temas->count() }} configuradas</span>
+                            @else
+                                <span class="badge bg-warning ms-2">Sin configurar</span>
+                            @endif
                         </h5>
+                        <a href="{{ route('encuestas.preguntas.create', $encuesta) }}"
+                            class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit me-2"></i>Editar Preguntas
+                        </a>
                     </div>
                     <div class="card-body">
                         @if ($encuesta->temas->count() > 0)
@@ -160,7 +172,11 @@
                             <div class="text-center py-4">
                                 <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
                                 <h5>No hay preguntas configuradas</h5>
-                                <p class="text-muted">Esta encuesta no tiene preguntas asignadas.</p>
+                                <p class="text-muted mb-3">Esta encuesta no tiene preguntas asignadas.</p>
+                                <a href="{{ route('encuestas.preguntas.create', $encuesta) }}"
+                                    class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus me-2"></i>Configurar Preguntas
+                                </a>
                             </div>
                         @endif
                     </div>

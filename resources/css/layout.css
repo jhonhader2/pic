@@ -1,0 +1,134 @@
+/* Estilos para el layout general */
+
+/* Asegurar que el body tenga altura completa */
+html,
+body {
+    height: 100%;
+}
+
+/* Layout flexbox para sticky footer */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Main content debe crecer para empujar el footer */
+main {
+    flex: 1 0 auto;
+}
+
+/* Footer siempre al final */
+footer {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+/* Estilos específicos para el footer */
+.footer {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+    color: #ffffff;
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer h5 {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.footer p {
+    color: #dee2e6;
+    margin-bottom: 0.5rem;
+}
+
+.footer small {
+    color: #adb5bd;
+}
+
+.footer .text-muted {
+    color: #adb5bd !important;
+}
+
+/* Efectos hover para enlaces en el footer */
+.footer a {
+    color: #dee2e6;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .footer {
+        padding: 1.5rem 0;
+        text-align: center;
+    }
+
+    .footer .text-md-end {
+        text-align: center !important;
+        margin-top: 1rem;
+    }
+}
+
+/* Asegurar que el contenido principal tenga padding bottom para evitar que se superponga con el footer */
+.container-fluid {
+    padding-bottom: 2rem;
+}
+
+/* Asegurar que las páginas con poco contenido mantengan el footer al final */
+body:has(.container-fluid:empty) main,
+body:has(.container-fluid:not(:empty)) main {
+    flex: 1;
+}
+
+/* Fallback para navegadores que no soportan :has() */
+@supports not (selector(:has(*))) {
+    main {
+        flex: 1;
+        min-height: calc(100vh - 300px);
+        /* Altura mínima para empujar el footer */
+    }
+}
+
+/* Estilos para páginas con poco contenido */
+.min-content-page {
+    min-height: calc(100vh - 200px);
+    /* Ajustar según la altura del header y footer */
+}
+
+/* Clase para contenido principal que necesita crecer */
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Asegurar que las páginas tengan suficiente contenido */
+.page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Animación suave para el footer */
+.footer {
+    transition: all 0.3s ease;
+}
+
+/* Estilos para el icono del footer */
+.footer .fas {
+    color: #007bff;
+}
+
+/* Separador visual en el footer */
+.footer-separator {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 1rem 0;
+    padding-top: 1rem;
+}
