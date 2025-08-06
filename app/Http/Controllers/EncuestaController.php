@@ -131,8 +131,9 @@ class EncuestaController extends Controller
     public function show(Encuesta $encuesta)
     {
         $encuesta->load(['temas.parametros', 'personas']);
+        $todasLasPersonas = Persona::orderBy('primer_nombre')->get();
 
-        return view('encuestas.show', compact('encuesta'));
+        return view('encuestas.show', compact('encuesta', 'todasLasPersonas'));
     }
 
     /**
@@ -169,26 +170,18 @@ class EncuestaController extends Controller
     {
         // Validación de datos
         $request->validate([
-            'tipo_pregunta' => 'required|array|min:1',
-            'tipo_pregunta.*' => 'in:' . implode(',', array_keys(TipoPreguntaHelper::getTiposDisponibles())),
-            'temas' => 'nullable|array',
-            'temas.*' => 'exists:temas,id',
-            'requeridas' => 'nullable|array',
-            'requeridas.*' => 'boolean',
-            'descripciones_pregunta' => 'nullable|array',
-            'descripciones_pregunta.*' => 'nullable|string|max:500',
-            'titulos_genericos' => 'nullable|array',
-            'titulos_genericos.*' => 'required|string|max:255',
-            'descripciones_genericas' => 'nullable|array',
-            'descripciones_genericas.*' => 'nullable|string|max:500',
-            'requeridas_genericas' => 'nullable|array',
-            'requeridas_genericas.*' => 'boolean',
+            'preguntas' => 'required|array|min:1',
+            'preguntas.*.titulo' => 'required|string|max:255',
+            'preguntas.*.tipo' => 'required|in:' . implode(',', array_keys(TipoPreguntaHelper::getTiposDisponibles())),
+            'preguntas.*.descripcion' => 'nullable|string|max:500',
+            'preguntas.*.requerida' => 'boolean',
+            'preguntas.*.opciones' => 'nullable|string', // JSON string para opciones
         ], [
-            'tipo_pregunta.required' => 'Debe seleccionar al menos un tipo de pregunta.',
-            'tipo_pregunta.min' => 'Debe seleccionar al menos un tipo de pregunta.',
-            'tipo_pregunta.*.in' => 'El tipo de pregunta seleccionado no es válido.',
-            'temas.*.exists' => 'Uno de los temas seleccionados no existe.',
-            'titulos_genericos.*.required' => 'El título de la pregunta es obligatorio.',
+            'preguntas.required' => 'Debe agregar al menos una pregunta.',
+            'preguntas.min' => 'Debe agregar al menos una pregunta.',
+            'preguntas.*.titulo.required' => 'El título de la pregunta es obligatorio.',
+            'preguntas.*.tipo.required' => 'Debe seleccionar un tipo de pregunta.',
+            'preguntas.*.tipo.in' => 'El tipo de pregunta seleccionado no es válido.',
         ]);
 
         try {
@@ -197,39 +190,43 @@ class EncuestaController extends Controller
             $orden = 1;
             $temasData = [];
 
-            // Procesar temas seleccionados
-            if ($request->has('temas') && !empty($request->temas)) {
-                foreach ($request->temas as $temaId) {
-                    $temasData[$temaId] = [
-                        'tipo_pregunta' => $request->tipo_pregunta[0] ?? 'seleccion_unica', // Por ahora usa el primer tipo
-                        'requerida' => isset($request->requeridas[$temaId]),
-                        'descripcion_pregunta' => $request->descripciones_pregunta[$temaId] ?? null,
-                        'opciones_personalizadas' => null,
-                        'orden' => $orden++
-                    ];
-                }
-            }
+            // Procesar cada pregunta
+            foreach ($request->preguntas as $preguntaData) {
+                // Crear un tema para cada pregunta
+                $tema = Tema::create([
+                    'name' => $preguntaData['titulo'],
+                    'descripcion' => $preguntaData['descripcion'] ?? null,
+                    'status' => true,
+                    'user_create_id' => Auth::id(),
+                    'user_edit_id' => Auth::id(),
+                ]);
 
-            // Procesar preguntas genéricas
-            if ($request->has('titulos_genericos')) {
-                foreach ($request->titulos_genericos as $tipo => $titulo) {
-                    // Crear un tema temporal para preguntas genéricas
-                    $temaGenerico = Tema::create([
-                        'name' => $titulo,
-                        'descripcion' => $request->descripciones_genericas[$tipo] ?? null,
-                        'status' => true,
-                        'user_create_id' => Auth::id(),
-                        'user_edit_id' => Auth::id(),
-                    ]);
+                // Procesar opciones si las hay
+                $opciones = [];
+                if (isset($preguntaData['opciones']) && !empty($preguntaData['opciones'])) {
+                    $opciones = json_decode($preguntaData['opciones'], true);
 
-                    $temasData[$temaGenerico->id] = [
-                        'tipo_pregunta' => $tipo,
-                        'requerida' => isset($request->requeridas_genericas[$tipo]),
-                        'descripcion_pregunta' => $request->descripciones_genericas[$tipo] ?? null,
-                        'opciones_personalizadas' => null,
-                        'orden' => $orden++
-                    ];
+                    // Crear parámetros para las opciones
+                    if (is_array($opciones)) {
+                        foreach ($opciones as $opcion) {
+                            \App\Models\Parametro::create([
+                                'name' => $opcion,
+                                'tema_id' => $tema->id,
+                                'status' => true,
+                                'user_create_id' => Auth::id(),
+                                'user_edit_id' => Auth::id(),
+                            ]);
+                        }
+                    }
                 }
+
+                $temasData[$tema->id] = [
+                    'tipo_pregunta' => $preguntaData['tipo'],
+                    'requerida' => isset($preguntaData['requerida']),
+                    'descripcion_pregunta' => $preguntaData['descripcion'] ?? null,
+                    'opciones_personalizadas' => !empty($opciones) ? json_encode($opciones) : null,
+                    'orden' => $orden++
+                ];
             }
 
             // Asignar temas a la encuesta
@@ -254,6 +251,12 @@ class EncuestaController extends Controller
      */
     public function storeRespuesta(Request $request, Encuesta $encuesta)
     {
+        // Verificar que el usuario esté autenticado
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->with('error', 'Debe iniciar sesión para responder la encuesta.');
+        }
+
         // Validación de datos de respuesta
         $request->validate([
             'respuestas' => 'required|array|min:1',
@@ -286,9 +289,8 @@ class EncuestaController extends Controller
             // Crear la respuesta principal
             $respuesta = Respuesta::create([
                 'encuesta_id' => $encuesta->id,
-                'user_id' => Auth::id(),
+                'usuario_id' => Auth::id(),
                 'fecha_respuesta' => now(),
-                'status' => true,
             ]);
 
             // Procesar cada respuesta
@@ -301,19 +303,29 @@ class EncuestaController extends Controller
 
                     DetalleRespuesta::create([
                         'respuesta_id' => $respuesta->id,
-                        'tema_id' => $temaId,
-                        'valor_texto' => $rutaArchivo,
-                        'valor_archivo' => $rutaArchivo,
-                        'status' => true,
+                        'pregunta_id' => $temaId,
+                        'ruta_archivo' => $rutaArchivo,
+                        'respuesta' => $nombreArchivo,
                     ]);
                 } else {
                     // Manejar texto, números, etc.
-                    DetalleRespuesta::create([
-                        'respuesta_id' => $respuesta->id,
-                        'tema_id' => $temaId,
-                        'valor_texto' => is_array($valor) ? implode(',', $valor) : $valor,
-                        'status' => true,
-                    ]);
+                    $valorRespuesta = is_array($valor) ? implode(',', $valor) : $valor;
+
+                    // Determinar el tipo de valor y guardarlo en el campo apropiado
+                    if (is_numeric($valorRespuesta)) {
+                        DetalleRespuesta::create([
+                            'respuesta_id' => $respuesta->id,
+                            'pregunta_id' => $temaId,
+                            'valor_numerico' => $valorRespuesta,
+                            'respuesta' => $valorRespuesta,
+                        ]);
+                    } else {
+                        DetalleRespuesta::create([
+                            'respuesta_id' => $respuesta->id,
+                            'pregunta_id' => $temaId,
+                            'respuesta' => $valorRespuesta,
+                        ]);
+                    }
                 }
             }
 
@@ -323,7 +335,7 @@ class EncuestaController extends Controller
             $this->notificationService->notificarRespuestaRecibida($encuesta, $respuesta);
 
             return redirect()->route('encuestas.index')
-                ->with('success', 'Respuesta enviada exitosamente.');
+                ->with('success', '¡Respuesta enviada exitosamente! Gracias por participar en la encuesta.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -436,6 +448,67 @@ class EncuestaController extends Controller
             if ($detalle->valor_archivo && Storage::disk('public')->exists($detalle->valor_archivo)) {
                 Storage::disk('public')->delete($detalle->valor_archivo);
             }
+        }
+    }
+
+    /**
+     * Update the assigned persons to the survey.
+     */
+    public function updatePersonas(Request $request, Encuesta $encuesta)
+    {
+        $request->validate([
+            'personas' => 'nullable|array',
+            'personas.*' => 'exists:personas,id',
+        ], [
+            'personas.*.exists' => 'Una de las personas seleccionadas no existe.',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $personasData = [];
+            if ($request->has('personas') && !empty($request->personas)) {
+                foreach ($request->personas as $personaId) {
+                    $personasData[$personaId] = ['created_by' => Auth::id()];
+                }
+            }
+
+            // Sincronizar personas (elimina las que no están en la lista y agrega las nuevas)
+            $encuesta->personas()->sync($personasData);
+
+            DB::commit();
+
+            return redirect()->route('encuestas.show', $encuesta)
+                ->with('success', 'Personas asignadas actualizadas exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withInput()
+                ->with('error', 'Error al actualizar las personas asignadas: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove a specific person from the survey.
+     */
+    public function detachPersona(Request $request, Encuesta $encuesta)
+    {
+        $request->validate([
+            'persona_id' => 'required|exists:personas,id',
+        ], [
+            'persona_id.required' => 'ID de persona es requerido.',
+            'persona_id.exists' => 'La persona especificada no existe.',
+        ]);
+
+        try {
+            $personaId = $request->persona_id;
+            $encuesta->personas()->detach($personaId);
+
+            return redirect()->route('encuestas.show', $encuesta)
+                ->with('success', 'Persona removida de la encuesta exitosamente.');
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Error al remover la persona de la encuesta: ' . $e->getMessage());
         }
     }
 }

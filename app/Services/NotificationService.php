@@ -202,8 +202,8 @@ class NotificationService
             'data' => $data,
         ]);
 
-        // Disparar evento para notificación en tiempo real
-        event(new NotificationSent($dbNotification));
+        // Evento deshabilitado - Sistema sin Pusher
+        // event(new NotificationSent($dbNotification));
     }
 
     /**
@@ -219,7 +219,7 @@ class NotificationService
         \Illuminate\Support\Facades\Cache::forget('total_encuestas');
         \Illuminate\Support\Facades\Cache::forget('encuestas_activas');
 
-        // Disparar evento para actualización en tiempo real
-        event(new \App\Events\DashboardUpdated($encuesta));
+        // Evento deshabilitado - Sistema sin Pusher
+        // event(new \App\Events\DashboardUpdated($encuesta));
     }
 }

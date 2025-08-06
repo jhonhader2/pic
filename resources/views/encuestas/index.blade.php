@@ -4,19 +4,6 @@
 
 @section('content')
     <div class="container-fluid py-4">
-        <!-- Alertas -->
-        @if (session('success'))
-            <x-alert type="success" title="¡Éxito!">
-                {{ session('success') }}
-            </x-alert>
-        @endif
-
-        @if (session('error'))
-            <x-alert type="error" title="¡Error!">
-                {{ session('error') }}
-            </x-alert>
-        @endif
-
         <!-- Header -->
         <div class="row mb-4">
             <div class="col-12">

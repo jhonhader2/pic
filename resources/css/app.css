@@ -1,3 +1,9 @@
+/* Import specific styles */
+@import './layout.css';
+@import './encuestas.css';
+@import './auth.css';
+@import './preguntas.css';
+
 /* Bootstrap CSS */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -17,9 +23,3 @@ body {
 .card:hover {
     transform: translateY(-2px);
 }
-
-/* Import specific styles */
-@import './layout.css';
-@import './encuestas.css';
-@import './auth.css';
-@import './preguntas.css';

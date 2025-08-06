@@ -26,7 +26,7 @@ Route::get('/not-found', [App\Http\Controllers\ErrorController::class, 'notFound
 // =========================
 // RUTAS PROTEGIDAS (AUTENTICACIÓN REQUERIDA)
 // =========================
-Route::middleware(['auth.redirect', 'activity.logger'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Dashboard principal
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');
@@ -58,6 +58,12 @@ Route::middleware(['auth.redirect', 'activity.logger'])->group(function () {
         ->name('encuestas.preguntas.create');
     Route::post('/encuestas/{encuesta}/preguntas', [App\Http\Controllers\EncuestaController::class, 'storePreguntas'])
         ->name('encuestas.preguntas.store');
+
+    // Gestión de personas asignadas
+    Route::put('/encuestas/{encuesta}/personas', [App\Http\Controllers\EncuestaController::class, 'updatePersonas'])
+        ->name('encuestas.personas.update');
+    Route::delete('/encuestas/{encuesta}/personas', [App\Http\Controllers\EncuestaController::class, 'detachPersona'])
+        ->name('encuestas.personas.detach');
 
     // Gestión de notificaciones
     Route::prefix('notifications')->name('notifications.')->group(function () {

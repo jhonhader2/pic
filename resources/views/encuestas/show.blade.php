@@ -71,33 +71,49 @@
 
             <div class="col-md-4">
                 <div class="card shadow-sm">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-users me-2"></i>Personas Asignadas
+                            <span class="badge bg-primary ms-2">{{ $encuesta->personas->count() }}</span>
                         </h5>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalPersonas">
+                            <i class="fas fa-edit me-1"></i>Gestionar
+                        </button>
                     </div>
                     <div class="card-body">
                         @if ($encuesta->personas->count() > 0)
                             <div class="list-group list-group-flush">
                                 @foreach ($encuesta->personas as $persona)
                                     <div class="list-group-item px-0">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-user-circle me-2 text-primary"></i>
-                                            <div>
-                                                <strong>{{ $persona->primer_nombre }}
-                                                    {{ $persona->primer_apellido }}</strong>
-                                                <br>
-                                                <small class="text-muted">{{ $persona->numero_documento }}</small>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-circle me-2 text-primary"></i>
+                                                <div>
+                                                    <strong>{{ $persona->primer_nombre }}
+                                                        {{ $persona->primer_apellido }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ $persona->numero_documento }}</small>
+                                                </div>
                                             </div>
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="quitarPersona('{{ $persona->id }}', '{{ $persona->primer_nombre }} {{ $persona->primer_apellido }}')"
+                                                title="Quitar persona">
+                                                <i class="fas fa-times"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-muted mb-0">
-                                <i class="fas fa-info-circle me-1"></i>
-                                No hay personas asignadas específicamente a esta encuesta.
-                            </p>
+                            <div class="text-center py-3">
+                                <i class="fas fa-users text-muted mb-2" style="font-size: 2rem;"></i>
+                                <p class="text-muted mb-2">No hay personas asignadas</p>
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#modalPersonas">
+                                    <i class="fas fa-plus me-1"></i>Asignar Personas
+                                </button>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -184,4 +200,90 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para gestionar personas asignadas -->
+    <div class="modal fade" id="modalPersonas" tabindex="-1" aria-labelledby="modalPersonasLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPersonasLabel">
+                        <i class="fas fa-users me-2"></i>Gestionar Personas Asignadas
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formPersonas" method="POST" action="{{ route('encuestas.personas.update', $encuesta) }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Seleccionar personas para asignar a la encuesta:</label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="buscarPersonas"
+                                    placeholder="Buscar personas...">
+                            </div>
+                        </div>
+
+                        <div class="personas-container" style="max-height: 400px; overflow-y: auto;">
+                            @foreach ($todasLasPersonas as $persona)
+                                <div class="persona-item mb-2 p-2 border rounded" data-persona-id="{{ $persona->id }}">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="persona_{{ $persona->id }}" name="personas[]"
+                                            value="{{ $persona->id }}" class="form-check-input persona-checkbox"
+                                            {{ $encuesta->personas->contains($persona->id) ? 'checked' : '' }}>
+                                        <label for="persona_{{ $persona->id }}" class="form-check-label">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-circle me-2 text-primary"></i>
+                                                <div>
+                                                    <strong>{{ $persona->primer_nombre }}
+                                                        {{ $persona->primer_apellido }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ $persona->numero_documento }}</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <span id="personasSeleccionadas">0</span> personas seleccionadas
+                                </small>
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        id="btnSeleccionarTodos">
+                                        <i class="fas fa-check-double me-1"></i>Seleccionar Todos
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        id="btnDeseleccionarTodos">
+                                        <i class="fas fa-times me-1"></i>Deseleccionar Todos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+    <script>
+        // Variables específicas de esta página
+        window.routes = {
+            encuestasPersonasDetach: '{{ route('encuestas.personas.detach', $encuesta) }}'
+        };
+    </script>
+@endpush

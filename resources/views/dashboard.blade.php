@@ -4,19 +4,6 @@
 
 @section('content')
     <div class="container py-5">
-        <!-- Mensajes de éxito/error -->
-        @if (session('success'))
-            <x-alert type="success">
-                {{ session('success') }}
-            </x-alert>
-        @endif
-
-        @if (session('error'))
-            <x-alert type="error">
-                {{ session('error') }}
-            </x-alert>
-        @endif
-
         <div class="row">
             <div class="col-12">
                 <div class="d-flex align-items-center mb-4">

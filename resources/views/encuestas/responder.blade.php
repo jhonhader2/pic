@@ -180,6 +180,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('respuestaForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
 
             // Validación del formulario
             form.addEventListener('submit', function(e) {
@@ -210,8 +211,39 @@
 
                 if (errores > 0) {
                     e.preventDefault();
-                    alert('Por favor complete todas las preguntas requeridas.');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Preguntas Requeridas',
+                            text: 'Por favor complete todas las preguntas marcadas como requeridas.',
+                            icon: 'warning',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        alert('Por favor complete todas las preguntas requeridas.');
+                    }
                     return false;
+                }
+
+                // Mostrar confirmación de envío
+                if (typeof Swal !== 'undefined') {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'Enviando Respuesta',
+                        text: 'Por favor espere mientras se procesa su respuesta...',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Enviar formulario después de mostrar la confirmación
+                    setTimeout(() => {
+                        form.submit();
+                    }, 1000);
                 }
             });
         });

@@ -67,20 +67,23 @@ class Encuesta extends Model
             }
         });
 
-        // Invalidar cache y disparar evento cuando se crea, actualiza o elimina una encuesta
+        // Invalidar cache cuando se crea, actualiza o elimina una encuesta
         static::created(function ($encuesta) {
             self::limpiarCacheEncuesta($encuesta);
-            event(new DashboardUpdated($encuesta));
+            // Evento deshabilitado - Sistema sin Pusher
+            // event(new DashboardUpdated($encuesta));
         });
 
         static::updated(function ($encuesta) {
             self::limpiarCacheEncuesta($encuesta);
-            event(new DashboardUpdated($encuesta));
+            // Evento deshabilitado - Sistema sin Pusher
+            // event(new DashboardUpdated($encuesta));
         });
 
         static::deleted(function ($encuesta) {
             self::limpiarCacheEncuesta($encuesta);
-            event(new DashboardUpdated($encuesta));
+            // Evento deshabilitado - Sistema sin Pusher
+            // event(new DashboardUpdated($encuesta));
         });
     }
 

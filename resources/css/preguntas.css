@@ -1,125 +1,137 @@
 /* Estilos específicos para la página de configuración de preguntas */
 
-/* Cards de tipos de pregunta */
-.tipo-pregunta-card {
+/* Estilos para preguntas individuales */
+.pregunta-item {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
     transition: all 0.3s ease;
-    cursor: pointer;
-    border: 2px solid transparent;
+    position: relative;
 }
 
-.tipo-pregunta-card:hover {
-    transform: translateY(-2px);
+.pregunta-item:hover {
+    border-color: #adb5bd;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.pregunta-item:focus-within {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Header de pregunta */
+.pregunta-item h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Botón de eliminar pregunta */
+.pregunta-item .btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    transition: all 0.2s ease;
+}
+
+.pregunta-item .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #ffffff;
+}
+
+/* Contenedor de preguntas */
+#preguntas-container {
+    min-height: 200px;
+}
+
+/* Botón agregar pregunta */
+#btn-agregar-pregunta {
+    border-style: dashed;
+    border-width: 2px;
+    transition: all 0.3s ease;
+}
+
+#btn-agregar-pregunta:hover {
+    border-color: #0d6efd;
+    background-color: #f8f9ff;
+    color: #0d6efd;
+}
+
+/* Modal de opciones */
+.modal-content {
+    border-radius: 0.5rem;
+    border: none;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
-.tipo-pregunta-card.selected {
-    border-color: #0d6efd;
-    background-color: #f8f9ff;
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 0.5rem 0.5rem 0 0;
 }
 
-.tipo-pregunta-radio:checked+label {
-    color: #0d6efd;
+.modal-title {
+    color: #495057;
     font-weight: 600;
 }
 
-/* Efectos visuales para selección */
-.tipo-pregunta-card input[type="radio"]:checked~.card-body {
-    background-color: #f8f9ff;
-}
-
-.tipo-pregunta-card input[type="radio"]:checked~.card-body .text-primary {
-    color: #0d6efd !important;
-}
-
-/* Secciones de configuración */
-.configuracion-tema {
-    background-color: #f8f9fa;
-    border-radius: 0.375rem;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-
-.tema-item {
-    transition: all 0.2s ease;
-    border: 1px solid #dee2e6;
-}
-
-.tema-item:hover {
-    border-color: #adb5bd;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-.tema-item .form-check-input:checked~.form-check-label {
-    color: #0d6efd;
-    font-weight: 600;
-}
-
-/* Preguntas genéricas */
-.pregunta-generica {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.pregunta-generica:hover {
-    border-color: #adb5bd;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-/* Badges y elementos visuales */
-.badge {
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.badge.bg-primary {
-    background-color: #0d6efd !important;
-}
-
-.badge.bg-info {
-    background-color: #0dcaf0 !important;
-    color: #000 !important;
-}
-
-/* Contenedor de temas con scroll */
-.temas-container {
-    max-height: 400px;
+/* Contenedor de opciones */
+#opciones-container {
+    max-height: 300px;
     overflow-y: auto;
+}
+
+.opcion-input {
+    border: 1px solid #dee2e6;
+    transition: border-color 0.2s ease;
+}
+
+.opcion-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Preview de opciones */
+.opciones-lista {
+    background-color: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 0.375rem;
-    padding: 1rem;
+    padding: 0.75rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .tipo-pregunta-card {
-        margin-bottom: 1rem;
-    }
-
-    .configuracion-tema {
-        padding: 0.75rem;
-    }
-
-    .pregunta-generica {
-        padding: 1rem;
-    }
+.opciones-lista .d-flex {
+    margin-bottom: 0.5rem;
 }
 
-/* Animaciones suaves */
-.fade-in {
-    animation: fadeIn 0.3s ease-in;
+.opciones-lista .d-flex:last-child {
+    margin-bottom: 0;
 }
 
-@keyframes fadeIn {
+/* Animaciones */
+.pregunta-item {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
     }
 
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pregunta-item {
+        padding: 1rem !important;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
     }
 }
 
@@ -148,4 +160,19 @@
     background-color: #fff3cd;
     border-color: #ffeaa7;
     color: #856404;
+}
+
+/* Badges y elementos visuales */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+.badge.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #000 !important;
 }
