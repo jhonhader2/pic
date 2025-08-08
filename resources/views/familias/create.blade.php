@@ -30,7 +30,14 @@
                     </div>
 
                     <div class="mt-3">
-                        <label for="jefe_persona_id" class="form-label fw-semibold">Jefe de familia</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="jefe_persona_id" class="form-label fw-semibold mb-0">Jefe de familia</label>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#crearPersonaModal">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Crear Nueva Persona
+                            </button>
+                        </div>
                         <select id="jefe_persona_id" name="jefe_persona_id" class="form-select">
                             <option value="">-- Seleccione --</option>
                             @foreach ($personas as $p)
@@ -42,7 +49,8 @@
                         </select>
                         <div class="form-text">
                             <i class="bi bi-info-circle"></i>
-                            El jefe de familia no puede ser jefe de otra familia.
+                            El jefe de familia no puede ser jefe de otra familia. Si no encuentra la persona, puede crearla
+                            usando el botón "Crear Nueva Persona".
                         </div>
                     </div>
 
@@ -67,6 +75,29 @@
                                 });
                             });
                         </script>
+
+                        <script>
+                            // Manejo del evento de persona creada
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const jefeSelect = document.getElementById('jefe_persona_id');
+
+                                // Escuchar el evento personalizado de persona creada
+                                document.addEventListener('personaCreated', function(event) {
+                                    const persona = event.detail.persona;
+
+                                    // Agregar nueva persona al select
+                                    const newOption = new Option(
+                                        `${persona.primer_nombre} ${persona.primer_apellido} - ${persona.numero_documento}`,
+                                        persona.id,
+                                        true,
+                                        true
+                                    );
+                                    jefeSelect.appendChild(newOption);
+                                    jefeSelect.value = persona.id;
+                                    $(jefeSelect).trigger('change');
+                                });
+                            });
+                        </script>
                     @endpush
 
                     <div class="mt-3">
@@ -85,4 +116,7 @@
             </div>
         </div>
     </div>
+
+    <!-- Usar el componente reutilizable -->
+    <x-persona-form-modal />
 @endsection

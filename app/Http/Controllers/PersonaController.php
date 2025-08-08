@@ -52,12 +52,19 @@ class PersonaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PersonaRequest $request): RedirectResponse
+    public function store(PersonaRequest $request): RedirectResponse|JsonResponse
     {
         try {
             $user = Auth::user();
 
             if (!$user) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Debe iniciar sesión para crear una persona.'
+                    ], 401);
+                }
+
                 return redirect()
                     ->route('login')
                     ->with('error', 'Debe iniciar sesión para crear una persona.');
@@ -65,6 +72,22 @@ class PersonaController extends Controller
 
             // Crear persona según el rol del usuario
             $result = $this->personaService->createPersonaByRole($request->validated());
+
+            // Si es una solicitud AJAX, devolver JSON
+            if ($request->ajax()) {
+                $persona = $result instanceof User ? $result->persona : $result;
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Persona creada exitosamente.',
+                    'persona' => [
+                        'id' => $persona->id,
+                        'primer_nombre' => $persona->primer_nombre,
+                        'primer_apellido' => $persona->primer_apellido,
+                        'numero_documento' => $persona->numero_documento
+                    ]
+                ]);
+            }
 
             // Determinar el mensaje según el tipo de resultado
             if ($result instanceof User) {
@@ -77,6 +100,13 @@ class PersonaController extends Controller
                 ->route('personas.index')
                 ->with('success', $message);
         } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear la persona: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()
                 ->back()
                 ->withInput()
