@@ -125,6 +125,16 @@ class Encuesta extends Model
     }
 
     /**
+     * Get the familias assigned to this encuesta.
+     */
+    public function familias()
+    {
+        return $this->belongsToMany(Familia::class, 'encuesta_familias')
+            ->withPivot('created_by')
+            ->withTimestamps();
+    }
+
+    /**
      * Get the temas associated with this encuesta.
      */
     public function temas()

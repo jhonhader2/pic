@@ -46,6 +46,9 @@ Route::middleware(['auth'])->group(function () {
     // Gestión de personas (CRUD)
     Route::resource('personas', App\Http\Controllers\PersonaController::class);
 
+    // Gestión de familias (CRUD)
+    Route::resource('familias', App\Http\Controllers\FamiliaController::class);
+
     // Gestión de encuestas (CRUD)
     Route::resource('encuestas', App\Http\Controllers\EncuestaController::class);
     Route::get('/encuestas/{encuesta}/responder', [App\Http\Controllers\EncuestaController::class, 'responder'])

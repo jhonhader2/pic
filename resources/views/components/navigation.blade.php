@@ -23,6 +23,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('familias.index') }}" id="nav-familias-link">
+                            <i class="fas fa-people-roof me-1"></i>Familias
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('encuestas.index') }}">
                             <i class="fas fa-clipboard-list me-1"></i>Encuestas
                         </a>
