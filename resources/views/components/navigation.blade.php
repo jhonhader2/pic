@@ -41,11 +41,12 @@
                         <x-notification-dropdown />
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" id="userDropdown">
                             <i class="fas fa-user-circle me-1"></i>
                             {{ Auth::user()->name }}
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="{{ route('dashboard') }}">
                                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a></li>
@@ -76,3 +77,34 @@
         </div>
     </div>
 </nav>
+
+<script>
+    // Script específico para el dropdown del usuario
+    document.addEventListener('DOMContentLoaded', function() {
+        const userDropdown = document.getElementById('userDropdown');
+        const dropdownMenu = userDropdown?.nextElementSibling;
+
+        if (userDropdown && dropdownMenu) {
+            console.log('User dropdown encontrado:', userDropdown);
+
+            userDropdown.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('User dropdown clicked');
+
+                // Toggle del menú
+                dropdownMenu.classList.toggle('show');
+                console.log('Menu visible:', dropdownMenu.classList.contains('show'));
+            });
+
+            // Cerrar al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (!userDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+        } else {
+            console.log('User dropdown no encontrado');
+        }
+    });
+</script>

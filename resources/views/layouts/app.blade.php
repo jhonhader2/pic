@@ -14,6 +14,72 @@
 
     @vite(['resources/css/app.css'])
     @stack('styles')
+
+    <!-- Estilos adicionales para dropdowns -->
+    <style>
+        .dropdown-menu.show {
+            display: block !important;
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            z-index: 1000 !important;
+            float: left !important;
+            min-width: 10rem !important;
+            padding: 0.5rem 0 !important;
+            margin: 0.125rem 0 0 !important;
+            font-size: 1rem !important;
+            color: #212529 !important;
+            text-align: left !important;
+            list-style: none !important;
+            background-color: #fff !important;
+            background-clip: padding-box !important;
+            border: 1px solid rgba(0, 0, 0, 0.15) !important;
+            border-radius: 0.375rem !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175) !important;
+        }
+
+        .dropdown-menu-end.show {
+            right: 0 !important;
+            left: auto !important;
+        }
+
+        .dropdown-toggle::after {
+            display: inline-block;
+            margin-left: 0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 0.25rem 1rem;
+            clear: both;
+            font-weight: 400;
+            color: #212529;
+            text-align: inherit;
+            text-decoration: none;
+            white-space: nowrap;
+            background-color: transparent;
+            border: 0;
+        }
+
+        .dropdown-item:hover {
+            color: #1e2125;
+            background-color: #e9ecef;
+        }
+
+        .dropdown-divider {
+            height: 0;
+            margin: 0.5rem 0;
+            border: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.175);
+        }
+    </style>
 </head>
 
 <body class="d-flex flex-column min-vh-100" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
@@ -43,6 +109,21 @@
     <script>
         window.userId = {{ Auth::id() ?? 'null' }};
         window.csrfToken = '{{ csrf_token() }}';
+
+        // Asegurar que los dropdowns de Bootstrap funcionen
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar todos los dropdowns
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
+
+            // También inicializar tooltips si existen
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
 
         // Función global para quitar persona - Definida aquí para garantizar disponibilidad
         window.quitarPersona = function(personaId, nombrePersona) {
@@ -179,6 +260,58 @@
     </script>
 
     @stack('scripts')
+
+    <!-- Script adicional para asegurar funcionamiento de dropdowns -->
+    <script>
+        // Solución directa para dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando dropdowns...');
+
+            // Verificar si Bootstrap está disponible
+            if (typeof bootstrap !== 'undefined') {
+                console.log('Bootstrap disponible, inicializando dropdowns...');
+                var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+                dropdownElementList.forEach(function(dropdownToggleEl) {
+                    new bootstrap.Dropdown(dropdownToggleEl);
+                });
+            } else {
+                console.log('Bootstrap no disponible, usando fallback...');
+                // Fallback manual
+                var dropdowns = document.querySelectorAll('.dropdown-toggle');
+                dropdowns.forEach(function(dropdown) {
+                    dropdown.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Dropdown clicked');
+
+                        var menu = this.nextElementSibling;
+                        if (menu && menu.classList.contains('dropdown-menu')) {
+                            // Cerrar otros dropdowns abiertos
+                            document.querySelectorAll('.dropdown-menu.show').forEach(function(
+                                openMenu) {
+                                if (openMenu !== menu) {
+                                    openMenu.classList.remove('show');
+                                }
+                            });
+
+                            menu.classList.toggle('show');
+                            console.log('Menu toggled:', menu.classList.contains('show'));
+                        }
+                    });
+                });
+
+                // Cerrar dropdowns al hacer clic fuera
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.dropdown')) {
+                        var openMenus = document.querySelectorAll('.dropdown-menu.show');
+                        openMenus.forEach(function(menu) {
+                            menu.classList.remove('show');
+                        });
+                    }
+                });
+            }
+        });
+    </script>
 
     @vite(['resources/js/app.js'])
     @vite(['resources/js/notifications.js'])
