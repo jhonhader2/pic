@@ -171,6 +171,11 @@ class EncuestaController extends Controller
         $temas = Tema::where('status', true)->orderBy('name')->get();
         $tiposPregunta = TipoPreguntaHelper::getTiposDisponibles();
 
+        // Cargar las preguntas existentes de la encuesta
+        $encuesta->load(['temas.parametros' => function ($query) {
+            $query->orderBy('created_at');
+        }]);
+
         return view('encuestas.preguntas.create', compact('encuesta', 'temas', 'tiposPregunta'));
     }
 
