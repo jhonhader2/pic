@@ -18,7 +18,6 @@ class Familia extends Model
         'direccion',
         'barrio_id',
         'jefe_persona_id',
-        'telefono',
         'latitud',
         'longitud',
         'created_by',

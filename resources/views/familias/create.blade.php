@@ -15,16 +15,27 @@
                         <div class="col-md-4">
                             <x-form-input id="codigo" name="codigo" label="Código" required />
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-4">
                             <x-form-input id="direccion" name="direccion" label="Dirección" required />
                         </div>
                         <div class="col-md-4">
-                            <x-form-input id="telefono" name="telefono" label="Teléfono" />
+                            <label for="barrio_id" class="form-label fw-semibold">Barrio <span
+                                    class="text-danger">*</span></label>
+                            <select id="barrio_id" name="barrio_id" class="form-select" required>
+                                <option value="">-- Seleccione --</option>
+                                @foreach (\App\Helpers\BarrioHelper::getOpciones() as $value => $label)
+                                    @if ($value !== '')
+                                        <option value="{{ $value }}" @selected(old('barrio_id') == $value)>
+                                            {{ $label }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <x-form-input id="latitud" name="latitud" label="Latitud" type="number" step="any" />
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <x-form-input id="longitud" name="longitud" label="Longitud" type="number" step="any" />
                         </div>
                     </div>
@@ -67,7 +78,16 @@
                         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
                         <script>
                             $(function() {
+                                // Inicializar Select2 para jefe de familia
                                 $('#jefe_persona_id').select2({
+                                    theme: 'bootstrap-5',
+                                    placeholder: '-- Seleccione --',
+                                    allowClear: true,
+                                    width: '100%'
+                                });
+
+                                // Inicializar Select2 para barrio
+                                $('#barrio_id').select2({
                                     theme: 'bootstrap-5',
                                     placeholder: '-- Seleccione --',
                                     allowClear: true,

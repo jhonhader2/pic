@@ -36,7 +36,6 @@ class FamiliaRequest extends FormRequest
                     }
                 }
             ],
-            'telefono' => ['nullable', 'string', 'max:20'],
             'latitud' => ['nullable', 'numeric', 'between:-90,90'],
             'longitud' => ['nullable', 'numeric', 'between:-180,180'],
             'personas' => ['nullable', 'array'],

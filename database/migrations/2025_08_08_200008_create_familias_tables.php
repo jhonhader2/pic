@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('direccion');
             $table->foreignId('barrio_id')->nullable()->constrained('parametros')->nullOnDelete();
             $table->uuid('jefe_persona_id')->nullable();
-            $table->string('telefono')->nullable();
             $table->decimal('latitud', 10, 7)->nullable();
             $table->decimal('longitud', 10, 7)->nullable();
             $table->foreignId('created_by')->constrained('users');

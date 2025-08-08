@@ -70,7 +70,7 @@
                         </div>
                         <div class="card-body">
                             <div class="row g-3">
-                                <div class="col-md-6">
+                                <div class="col-12">
                                     <div class="form-floating">
                                         <input type="text" class="form-control @error('codigo') is-invalid @enderror"
                                             id="codigo" name="codigo" value="{{ old('codigo', $familia->codigo) }}"
@@ -79,19 +79,6 @@
                                             <i class="fas fa-hashtag me-1"></i>Código
                                         </label>
                                         @error('codigo')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control @error('telefono') is-invalid @enderror"
-                                            id="telefono" name="telefono" value="{{ old('telefono', $familia->telefono) }}"
-                                            placeholder="Teléfono">
-                                        <label for="telefono">
-                                            <i class="fas fa-phone me-1"></i>Teléfono
-                                        </label>
-                                        @error('telefono')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
