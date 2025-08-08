@@ -243,12 +243,12 @@
                                                     </p>
                                                 @endif
                                             </div>
-                                            <div class="dropdown" style="position: relative;">
+                                            <div class="dropdown">
                                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    type="button" id="dropdownMenuButton{{ $encuesta->id }}">
                                                     <i class="fas fa-ellipsis-v"></i>
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1060;">
+                                                <ul class="dropdown-menu dropdown-menu-end">
                                                     <li><a class="dropdown-item"
                                                             href="{{ route('encuestas.show', $encuesta) }}">
                                                             <i class="fas fa-eye me-2"></i>Ver detalles
@@ -388,3 +388,97 @@
 
 
 @endsection
+
+@push('scripts')
+    <script>
+        // Función para confirmar eliminación
+        function confirmarEliminacion(url, titulo) {
+            if (confirm(
+                    `¿Estás seguro de que deseas eliminar la encuesta "${titulo}"? Esta acción no se puede deshacer.`)) {
+                // Crear un formulario temporal para enviar la petición DELETE
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+
+                // Agregar el token CSRF
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Agregar el método DELETE
+                const methodField = document.createElement('input');
+                methodField.type = 'hidden';
+                methodField.name = '_method';
+                methodField.value = 'DELETE';
+                form.appendChild(methodField);
+
+                // Agregar el formulario al DOM y enviarlo
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Función para alternar filtros
+        function toggleFiltros() {
+            const content = document.getElementById('filtrosContent');
+            const icon = document.getElementById('filtrosIcon');
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Solución manual para dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando dropdowns manualmente...');
+
+            // Agregar event listeners a todos los botones de dropdown
+            document.querySelectorAll('.dropdown-toggle').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Dropdown clicked:', this.id);
+
+                    // Obtener el menú asociado
+                    const dropdown = this.closest('.dropdown');
+                    const menu = dropdown.querySelector('.dropdown-menu');
+
+                    // Cerrar todos los otros dropdowns
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(openMenu) {
+                        if (openMenu !== menu) {
+                            openMenu.classList.remove('show');
+                        }
+                    });
+
+                    // Alternar el menú actual
+                    menu.classList.toggle('show');
+                    console.log('Menu toggled:', menu.classList.contains('show'));
+                });
+            });
+
+            // Cerrar dropdowns al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
+
+            // Prevenir que los clics dentro del menú lo cierren
+            document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                menu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+    </script>
+@endpush
