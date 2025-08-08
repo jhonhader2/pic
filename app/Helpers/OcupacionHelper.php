@@ -9,7 +9,7 @@ class OcupacionHelper
         return ParametroHelper::getOpciones('OCUPACION');
     }
 
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'OCUPACION');
     }

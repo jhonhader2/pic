@@ -15,7 +15,7 @@ class EstadoCivilHelper
     /**
      * Verifica si un ID de estado civil es válido
      */
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'ESTADO CIVIL');
     }

@@ -9,7 +9,7 @@ class EpsHelper
         return ParametroHelper::getOpciones('EPS');
     }
 
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'EPS');
     }

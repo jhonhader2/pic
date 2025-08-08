@@ -9,7 +9,7 @@ class PertenenciaEtnicaHelper
         return ParametroHelper::getOpciones('TIPO DE PERTENENCIA ETNICA');
     }
 
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'TIPO DE PERTENENCIA ETNICA');
     }

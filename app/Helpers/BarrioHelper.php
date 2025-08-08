@@ -9,7 +9,7 @@ class BarrioHelper
         return ParametroHelper::getOpciones('BARRIO');
     }
 
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'BARRIO');
     }

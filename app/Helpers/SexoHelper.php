@@ -26,7 +26,7 @@ class SexoHelper
      * @param int $id
      * @return string|null
      */
-    public static function getTexto(int $id): ?string
+    public static function getTexto(?int $id): ?string
     {
         return ParametroHelper::getNombrePorId($id, 'SEXO');
     }
@@ -34,7 +34,7 @@ class SexoHelper
     /**
      * Verifica si un ID de sexo es válido
      */
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'SEXO');
     }

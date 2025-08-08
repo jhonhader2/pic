@@ -102,20 +102,23 @@
     </div>
 @endsection
 
+@php
+    $preguntasExistentes = $encuesta->temas->map(function ($tema) {
+        return [
+            'titulo' => $tema->name,
+            'tipo' => $tema->pivot->tipo_pregunta,
+            'descripcion' => $tema->pivot->descripcion_pregunta,
+            'requerida' => $tema->pivot->requerida,
+            'opciones' => $tema->parametros->pluck('name')->toArray(),
+        ];
+    });
+@endphp
+
 @push('scripts')
     <script>
         // Datos necesarios para el JavaScript
         window.tiposPregunta = @json($tiposPregunta);
         window.temas = @json($temas);
-        window.preguntasExistentes = @json(
-            $encuesta->temas->map(function ($tema) {
-                return [
-                    'titulo' => $tema->name,
-                    'tipo' => $tema->pivot->tipo_pregunta,
-                    'descripcion' => $tema->pivot->descripcion_pregunta,
-                    'requerida' => $tema->pivot->requerida,
-                    'opciones' => $tema->parametros->pluck('name')->toArray(),
-                ];
-            }));
+        window.preguntasExistentes = @json($preguntasExistentes);
     </script>
 @endpush

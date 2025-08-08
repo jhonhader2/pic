@@ -10,19 +10,25 @@ use App\Models\DetalleRespuesta;
 use App\Helpers\TipoPreguntaHelper;
 use App\Http\Requests\EncuestaRequest;
 use App\Services\NotificationService;
+use App\Services\RespuestaService;
+use App\Services\ResultadoService;
+use App\Services\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
-class EncuestaController extends Controller
+class EncuestaController extends BaseController
 {
     /**
      * Constructor con inyección de dependencias
      */
     public function __construct(
-        private NotificationService $notificationService
+        private NotificationService $notificationService,
+        private RespuestaService $respuestaService,
+        private ResultadoService $resultadoService,
+        private FileService $fileService
     ) {}
     /**
      * Display a listing of the resource.
@@ -267,97 +273,16 @@ class EncuestaController extends Controller
      */
     public function storeRespuesta(Request $request, Encuesta $encuesta)
     {
-        // Verificar que el usuario esté autenticado
-        if (!Auth::check()) {
-            return redirect()->route('login')
-                ->with('error', 'Debe iniciar sesión para responder la encuesta.');
-        }
-
-        // Validación de datos de respuesta
-        $request->validate([
-            'respuestas' => 'required|array|min:1',
-            'respuestas.*' => 'nullable',
-        ], [
-            'respuestas.required' => 'Debe responder al menos una pregunta.',
-            'respuestas.min' => 'Debe responder al menos una pregunta.',
-        ]);
-
-        // Validación específica para archivos
-        foreach ($request->respuestas as $temaId => $respuesta) {
-            if ($request->hasFile("respuestas.{$temaId}")) {
-                $request->validate([
-                    "respuestas.{$temaId}" => [
-                        'file',
-                        'mimes:pdf,doc,docx,jpg,jpeg,png',
-                        'max:5120', // 5MB máximo
-                    ]
-                ], [
-                    "respuestas.{$temaId}.file" => 'El archivo es requerido.',
-                    "respuestas.{$temaId}.mimes" => 'Solo se permiten archivos PDF, DOC, DOCX, JPG, PNG.',
-                    "respuestas.{$temaId}.max" => 'El archivo no puede superar 5MB.',
-                ]);
-            }
-        }
-
-        try {
-            DB::beginTransaction();
-
-            // Crear la respuesta principal
-            $respuesta = Respuesta::create([
-                'encuesta_id' => $encuesta->id,
-                'usuario_id' => Auth::id(),
-                'fecha_respuesta' => now(),
-            ]);
-
-            // Procesar cada respuesta
-            foreach ($request->respuestas as $temaId => $valor) {
-                if ($request->hasFile("respuestas.{$temaId}")) {
-                    // Manejar archivo
-                    $archivo = $request->file("respuestas.{$temaId}");
-                    $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
-                    $rutaArchivo = $archivo->storeAs('respuestas', $nombreArchivo, 'public');
-
-                    DetalleRespuesta::create([
-                        'respuesta_id' => $respuesta->id,
-                        'pregunta_id' => $temaId,
-                        'ruta_archivo' => $rutaArchivo,
-                        'respuesta' => $nombreArchivo,
-                    ]);
-                } else {
-                    // Manejar texto, números, etc.
-                    $valorRespuesta = is_array($valor) ? implode(',', $valor) : $valor;
-
-                    // Determinar el tipo de valor y guardarlo en el campo apropiado
-                    if (is_numeric($valorRespuesta)) {
-                        DetalleRespuesta::create([
-                            'respuesta_id' => $respuesta->id,
-                            'pregunta_id' => $temaId,
-                            'valor_numerico' => $valorRespuesta,
-                            'respuesta' => $valorRespuesta,
-                        ]);
-                    } else {
-                        DetalleRespuesta::create([
-                            'respuesta_id' => $respuesta->id,
-                            'pregunta_id' => $temaId,
-                            'respuesta' => $valorRespuesta,
-                        ]);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            // Enviar notificación de respuesta recibida
-            $this->notificationService->notificarRespuestaRecibida($encuesta, $respuesta);
-
-            return redirect()->route('encuestas.index')
-                ->with('success', '¡Respuesta enviada exitosamente! Gracias por participar en la encuesta.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->withInput()
-                ->with('error', 'Error al enviar la respuesta: ' . $e->getMessage());
-        }
+        return $this->executeTransaction(
+            function () use ($request, $encuesta) {
+                $respuesta = $this->respuestaService->procesarRespuesta($request, $encuesta);
+                $this->notificationService->notificarRespuestaRecibida($encuesta, $respuesta);
+                return $respuesta;
+            },
+            '¡Respuesta enviada exitosamente! Gracias por participar en la encuesta.',
+            'Error al enviar la respuesta',
+            'encuestas.index'
+        );
     }
 
     /**
@@ -536,25 +461,14 @@ class EncuestaController extends Controller
         // Cargar relaciones necesarias
         $encuesta->load(['temas.parametros', 'respuestas.detalleRespuestas']);
 
-        // Estadísticas generales
-        $totalRespuestas = $encuesta->respuestas()->count();
-        $totalPreguntas = $encuesta->temas()->count();
-        $totalPersonasAsignadas = $encuesta->personas()->count();
-        $porcentajeParticipacion = $totalPersonasAsignadas > 0 ? round(($totalRespuestas / $totalPersonasAsignadas) * 100, 1) : 0;
-        $diasActiva = $encuesta->fecha_inicio->diffInDays(now());
-
-        // Participación por día (últimos 30 días)
-        $participacionPorDia = $this->getParticipacionPorDia($encuesta);
-
-        // Resultados por pregunta
-        $resultadosPreguntas = $this->getResultadosPorPregunta($encuesta);
+        // Obtener estadísticas usando el servicio
+        $estadisticas = $this->resultadoService->getEstadisticasGenerales($encuesta);
+        $participacionPorDia = $this->resultadoService->getParticipacionPorDia($encuesta);
+        $resultadosPreguntas = $this->resultadoService->getResultadosPorPregunta($encuesta);
 
         return view('encuestas.resultados', compact(
             'encuesta',
-            'totalRespuestas',
-            'totalPreguntas',
-            'porcentajeParticipacion',
-            'diasActiva',
+            'estadisticas',
             'participacionPorDia',
             'resultadosPreguntas'
         ));
@@ -565,245 +479,6 @@ class EncuestaController extends Controller
      */
     public function exportResultados(Encuesta $encuesta, $formato = 'pdf')
     {
-        // Cargar relaciones necesarias
-        $encuesta->load(['temas.parametros', 'respuestas.detalleRespuestas']);
-
-        $totalRespuestas = $encuesta->respuestas()->count();
-        $totalPreguntas = $encuesta->temas()->count();
-        $totalPersonasAsignadas = $encuesta->personas()->count();
-        $porcentajeParticipacion = $totalPersonasAsignadas > 0 ? round(($totalRespuestas / $totalPersonasAsignadas) * 100, 1) : 0;
-        $diasActiva = $encuesta->fecha_inicio->diffInDays(now());
-        $participacionPorDia = $this->getParticipacionPorDia($encuesta);
-        $resultadosPreguntas = $this->getResultadosPorPregunta($encuesta);
-
-        $data = [
-            'encuesta' => $encuesta,
-            'totalRespuestas' => $totalRespuestas,
-            'totalPreguntas' => $totalPreguntas,
-            'porcentajeParticipacion' => $porcentajeParticipacion,
-            'diasActiva' => $diasActiva,
-            'participacionPorDia' => $participacionPorDia,
-            'resultadosPreguntas' => $resultadosPreguntas
-        ];
-
-        if ($formato === 'pdf') {
-            return $this->exportToPdf($data);
-        } else {
-            return $this->exportToExcel($data);
-        }
-    }
-
-    /**
-     * Get participation by day data.
-     */
-    private function getParticipacionPorDia(Encuesta $encuesta)
-    {
-        $fechaInicio = $encuesta->fecha_inicio;
-        $fechaFin = min($encuesta->fecha_fin, now());
-        $dias = $fechaInicio->diffInDays($fechaFin) + 1;
-
-        $labels = [];
-        $data = [];
-
-        for ($i = 0; $i < min($dias, 30); $i++) {
-            $fecha = $fechaInicio->copy()->addDays($i);
-            $labels[] = $fecha->format('d/m');
-
-            $respuestasDelDia = $encuesta->respuestas()
-                ->whereDate('created_at', $fecha)
-                ->count();
-
-            $data[] = $respuestasDelDia;
-        }
-
-        return [
-            'labels' => $labels,
-            'data' => $data
-        ];
-    }
-
-    /**
-     * Get results by question.
-     */
-    private function getResultadosPorPregunta(Encuesta $encuesta)
-    {
-        $resultados = [];
-
-        foreach ($encuesta->temas as $tema) {
-            $resultado = [
-                'pregunta' => $tema->name,
-                'descripcion' => $tema->pivot->descripcion_pregunta,
-                'tipo' => $tema->pivot->tipo_pregunta,
-                'opciones' => [],
-                'respuestas' => [],
-                'promedio' => 0,
-                'maximo' => 0,
-                'minimo' => 0,
-                'distribucion' => []
-            ];
-
-            // Obtener respuestas para esta pregunta
-            $detalleRespuestas = DetalleRespuesta::where('pregunta_id', $tema->id)
-                ->whereHas('respuesta', function ($query) use ($encuesta) {
-                    $query->where('encuesta_id', $encuesta->id);
-                })
-                ->get();
-
-            switch ($tema->pivot->tipo_pregunta) {
-                case 'seleccion_unica':
-                case 'seleccion_multiple':
-                    $resultado['opciones'] = $this->getOpcionesResultados($tema, $detalleRespuestas);
-                    break;
-
-                case 'escala':
-                    $resultado = array_merge($resultado, $this->getEscalaResultados($detalleRespuestas));
-                    break;
-
-                case 'numero':
-                    $resultado = array_merge($resultado, $this->getNumeroResultados($detalleRespuestas));
-                    break;
-
-                case 'texto_corto':
-                case 'texto_largo':
-                    $resultado['respuestas'] = $this->getTextoResultados($detalleRespuestas);
-                    break;
-
-                case 'fecha':
-                    $resultado['respuestas'] = $this->getFechaResultados($detalleRespuestas);
-                    break;
-
-                case 'archivo':
-                    $resultado['respuestas'] = $this->getArchivoResultados($detalleRespuestas);
-                    break;
-            }
-
-            $resultados[] = $resultado;
-        }
-
-        return $resultados;
-    }
-
-    /**
-     * Get options results for selection questions.
-     */
-    private function getOpcionesResultados($tema, $detalleRespuestas)
-    {
-        $opciones = [];
-        $totalRespuestas = $detalleRespuestas->count();
-
-        foreach ($tema->parametros as $parametro) {
-            $cantidad = $detalleRespuestas->where('parametro_id', $parametro->id)->count();
-            $porcentaje = $totalRespuestas > 0 ? round(($cantidad / $totalRespuestas) * 100, 1) : 0;
-
-            $opciones[] = [
-                'texto' => $parametro->name,
-                'cantidad' => $cantidad,
-                'porcentaje' => $porcentaje
-            ];
-        }
-
-        return $opciones;
-    }
-
-    /**
-     * Get scale results.
-     */
-    private function getEscalaResultados($detalleRespuestas)
-    {
-        $valores = $detalleRespuestas->pluck('respuesta')->filter()->map(function ($valor) {
-            return (int) $valor;
-        });
-
-        $distribucion = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $distribucion[] = [
-                'valor' => $i,
-                'cantidad' => $valores->filter(function ($valor) use ($i) {
-                    return $valor == $i;
-                })->count()
-            ];
-        }
-
-        return [
-            'promedio' => $valores->count() > 0 ? round($valores->avg(), 1) : 0,
-            'distribucion' => $distribucion
-        ];
-    }
-
-    /**
-     * Get number results.
-     */
-    private function getNumeroResultados($detalleRespuestas)
-    {
-        $valores = $detalleRespuestas->pluck('respuesta')->filter()->map(function ($valor) {
-            return (float) $valor;
-        });
-
-        return [
-            'promedio' => $valores->count() > 0 ? round($valores->avg(), 2) : 0,
-            'maximo' => $valores->count() > 0 ? $valores->max() : 0,
-            'minimo' => $valores->count() > 0 ? $valores->min() : 0
-        ];
-    }
-
-    /**
-     * Get text results.
-     */
-    private function getTextoResultados($detalleRespuestas)
-    {
-        return $detalleRespuestas->map(function ($detalle) {
-            return [
-                'respuesta' => $detalle->respuesta,
-                'fecha' => $detalle->created_at->format('d/m/Y H:i'),
-                'fecha_formateada' => $detalle->created_at->format('d/m/Y H:i')
-            ];
-        })->toArray();
-    }
-
-    /**
-     * Get date results.
-     */
-    private function getFechaResultados($detalleRespuestas)
-    {
-        return $detalleRespuestas->map(function ($detalle) {
-            return [
-                'respuesta' => $detalle->respuesta,
-                'fecha' => \Carbon\Carbon::parse($detalle->respuesta)->format('d/m/Y'),
-                'fecha_formateada' => \Carbon\Carbon::parse($detalle->respuesta)->format('d/m/Y')
-            ];
-        })->toArray();
-    }
-
-    /**
-     * Get file results.
-     */
-    private function getArchivoResultados($detalleRespuestas)
-    {
-        return $detalleRespuestas->map(function ($detalle) {
-            return [
-                'respuesta' => $detalle->ruta_archivo,
-                'nombre' => basename($detalle->ruta_archivo),
-                'fecha' => $detalle->created_at->format('d/m/Y H:i'),
-                'fecha_formateada' => $detalle->created_at->format('d/m/Y H:i')
-            ];
-        })->toArray();
-    }
-
-    /**
-     * Export to PDF.
-     */
-    private function exportToPdf($data)
-    {
-        // Implementar exportación a PDF
-        return response()->json(['message' => 'Exportación PDF no implementada aún']);
-    }
-
-    /**
-     * Export to Excel.
-     */
-    private function exportToExcel($data)
-    {
-        // Implementar exportación a Excel
-        return response()->json(['message' => 'Exportación Excel no implementada aún']);
+        return $this->resultadoService->exportarResultados($encuesta, $formato);
     }
 }

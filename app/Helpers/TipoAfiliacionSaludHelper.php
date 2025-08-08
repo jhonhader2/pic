@@ -9,8 +9,8 @@ class TipoAfiliacionSaludHelper
         return ParametroHelper::getOpciones('TIPO DE AFILIACIÓN EN SALUD');
     }
 
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'TIPO DE AFILIACIÓN EN SALUD');
     }
-} 
+}

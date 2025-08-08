@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
-class NotificationController extends Controller
+class NotificationController extends BaseController
 {
     /**
      * Constructor con inyección de dependencias
@@ -47,14 +47,16 @@ class NotificationController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $notification = $user->notifications()->findOrFail($id);
 
-        $notification->markAsRead();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Notificación marcada como leída',
-        ]);
+        return $this->executeJsonOperation(
+            function () use ($user, $id) {
+                $notification = $user->notifications()->findOrFail($id);
+                $notification->markAsRead();
+                return $notification;
+            },
+            'Notificación marcada como leída',
+            'Error al marcar la notificación como leída'
+        );
     }
 
     /**
@@ -64,12 +66,12 @@ class NotificationController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $this->notificationService->marcarTodasComoLeidas($user);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Todas las notificaciones marcadas como leídas',
-        ]);
+        return $this->executeJsonOperation(
+            fn() => $this->notificationService->marcarTodasComoLeidas($user),
+            'Todas las notificaciones marcadas como leídas',
+            'Error al marcar las notificaciones como leídas'
+        );
     }
 
     /**
@@ -79,14 +81,16 @@ class NotificationController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $notification = $user->notifications()->findOrFail($id);
 
-        $notification->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Notificación eliminada',
-        ]);
+        return $this->executeJsonOperation(
+            function () use ($user, $id) {
+                $notification = $user->notifications()->findOrFail($id);
+                $notification->delete();
+                return $notification;
+            },
+            'Notificación eliminada',
+            'Error al eliminar la notificación'
+        );
     }
 
     /**

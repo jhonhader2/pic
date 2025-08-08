@@ -314,6 +314,7 @@
     </script>
 
     @vite(['resources/js/app.js'])
+    @vite(['resources/js/base.js'])
     @vite(['resources/js/notifications.js'])
 
 

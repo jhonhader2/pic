@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class FamiliaController extends Controller
+class FamiliaController extends BaseController
 {
     public function __construct(private FamiliaService $familiaService) {}
 
@@ -51,8 +51,13 @@ class FamiliaController extends Controller
 
     public function store(FamiliaRequest $request): RedirectResponse
     {
-        $familia = $this->familiaService->create($request->validated());
-        return redirect()->route('familias.show', $familia)->with('success', 'Familia creada exitosamente.');
+        return $this->executeTransaction(
+            fn() => $this->familiaService->create($request->validated()),
+            'Familia creada exitosamente.',
+            'Error al crear la familia',
+            'familias.show',
+            ['familia' => fn() => $this->familiaService->create($request->validated())]
+        );
     }
 
     public function show(Familia $familia)
@@ -92,13 +97,22 @@ class FamiliaController extends Controller
 
     public function update(FamiliaRequest $request, Familia $familia): RedirectResponse
     {
-        $this->familiaService->update($familia, $request->validated());
-        return redirect()->route('familias.show', $familia)->with('success', 'Familia actualizada exitosamente.');
+        return $this->executeTransaction(
+            fn() => $this->familiaService->update($familia, $request->validated()),
+            'Familia actualizada exitosamente.',
+            'Error al actualizar la familia',
+            'familias.show',
+            ['familia' => $familia]
+        );
     }
 
     public function destroy(Familia $familia)
     {
-        $familia->delete();
-        return redirect()->route('familias.index')->with('success', 'Familia eliminada.');
+        return $this->executeTransaction(
+            fn() => $familia->delete(),
+            'Familia eliminada exitosamente.',
+            'Error al eliminar la familia',
+            'familias.index'
+        );
     }
 }

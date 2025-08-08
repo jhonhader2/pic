@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
-class PersonaController extends Controller
+class PersonaController extends BaseController
 {
     public function __construct(
         private PersonaService $personaService
@@ -54,64 +54,32 @@ class PersonaController extends Controller
      */
     public function store(PersonaRequest $request): RedirectResponse|JsonResponse
     {
-        try {
-            $user = Auth::user();
+        $user = Auth::user();
 
-            if (!$user) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Debe iniciar sesión para crear una persona.'
-                    ], 401);
-                }
-
-                return redirect()
-                    ->route('login')
-                    ->with('error', 'Debe iniciar sesión para crear una persona.');
-            }
-
-            // Crear persona según el rol del usuario
-            $result = $this->personaService->createPersonaByRole($request->validated());
-
-            // Si es una solicitud AJAX, devolver JSON
+        if (!$user) {
             if ($request->ajax()) {
-                $persona = $result instanceof User ? $result->persona : $result;
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Persona creada exitosamente.',
-                    'persona' => [
-                        'id' => $persona->id,
-                        'primer_nombre' => $persona->primer_nombre,
-                        'primer_apellido' => $persona->primer_apellido,
-                        'numero_documento' => $persona->numero_documento
-                    ]
-                ]);
-            }
-
-            // Determinar el mensaje según el tipo de resultado
-            if ($result instanceof User) {
-                $message = 'Usuario y persona creados exitosamente.';
-            } else {
-                $message = 'Persona creada exitosamente.';
+                return $this->errorResponse('Debe iniciar sesión para crear una persona.', 401);
             }
 
             return redirect()
-                ->route('personas.index')
-                ->with('success', $message);
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al crear la persona: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Error al crear la persona: ' . $e->getMessage());
+                ->route('login')
+                ->with('error', 'Debe iniciar sesión para crear una persona.');
         }
+
+        if ($request->ajax()) {
+            return $this->executeJsonOperation(
+                fn() => $this->personaService->createPersonaByRole($request->validated()),
+                'Persona creada exitosamente.',
+                'Error al crear la persona'
+            );
+        }
+
+        return $this->executeTransaction(
+            fn() => $this->personaService->createPersonaByRole($request->validated()),
+            'Persona creada exitosamente.',
+            'Error al crear la persona',
+            'personas.index'
+        );
     }
 
     /**
@@ -151,18 +119,12 @@ class PersonaController extends Controller
      */
     public function update(PersonaRequest $request, Persona $persona): RedirectResponse
     {
-        try {
-            $persona->update($request->validated());
-
-            return redirect()
-                ->route('personas.index')
-                ->with('success', 'Persona actualizada exitosamente.');
-        } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Error al actualizar la persona: ' . $e->getMessage());
-        }
+        return $this->executeTransaction(
+            fn() => $persona->update($request->validated()),
+            'Persona actualizada exitosamente.',
+            'Error al actualizar la persona',
+            'personas.index'
+        );
     }
 
     /**
@@ -170,18 +132,10 @@ class PersonaController extends Controller
      */
     public function destroy(Persona $persona): JsonResponse
     {
-        try {
-            $persona->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Persona eliminada exitosamente.'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la persona: ' . $e->getMessage()
-            ], 500);
-        }
+        return $this->executeJsonOperation(
+            fn() => $persona->delete(),
+            'Persona eliminada exitosamente.',
+            'Error al eliminar la persona'
+        );
     }
 }

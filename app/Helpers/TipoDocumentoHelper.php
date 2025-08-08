@@ -15,7 +15,7 @@ class TipoDocumentoHelper
     /**
      * Verifica si un ID de tipo de documento es válido
      */
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'TIPO DE DOCUMENTO');
     }

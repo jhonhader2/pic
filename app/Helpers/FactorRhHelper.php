@@ -9,7 +9,7 @@ class FactorRhHelper
         return ParametroHelper::getOpciones('FACTOR RH');
     }
 
-    public static function esValido(int $id): bool
+    public static function esValido(?int $id): bool
     {
         return ParametroHelper::esValido($id, 'FACTOR RH');
     }
