@@ -9,8 +9,8 @@
             </span>
         @endif
         <input type="{{ $type }}" class="form-control @error($name) is-invalid @enderror" id="{{ $name }}"
-            name="{{ $name }}" value="{{ old($name) }}" placeholder="{{ $placeholder }}"
-            {{ $required ? 'required' : '' }} {{ $attributes }}>
+            name="{{ $name }}" value="{{ old($name, $attributes->get('value', '')) }}" placeholder="{{ $placeholder }}"
+            {{ $required ? 'required' : '' }} {{ $attributes->except('value') }}>
     </div>
     @error($name)
         <div class="invalid-feedback d-block">

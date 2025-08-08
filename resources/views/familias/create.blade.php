@@ -34,8 +34,10 @@
                         <select id="jefe_persona_id" name="jefe_persona_id" class="form-select">
                             <option value="">-- Seleccione --</option>
                             @foreach ($personas as $p)
-                                <option value="{{ $p->id }}">{{ $p->primer_nombre }} {{ $p->primer_apellido }} -
-                                    {{ $p->numero_documento }}</option>
+                                <option value="{{ $p->id }}" @selected(old('jefe_persona_id') == $p->id)>
+                                    {{ $p->primer_nombre }} {{ $p->primer_apellido }} -
+                                    {{ $p->numero_documento }}
+                                </option>
                             @endforeach
                         </select>
                         <div class="form-text">
@@ -69,7 +71,7 @@
 
                     <div class="mt-3">
                         <label class="form-label fw-semibold">Miembros de la familia</label>
-                        <x-persona-selector :personas="$personas" :selected="[]" />
+                        <x-persona-selector :personas="$personas" :selected="old('personas', [])" />
                         <div class="form-text">
                             <i class="bi bi-info-circle"></i>
                             Selecciona los miembros de la familia. El jefe de familia se agregará automáticamente.

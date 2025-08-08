@@ -6,6 +6,9 @@
     <div class="container py-4">
         <x-page-header title="Familia {{ $familia->codigo }}">
             <div class="btn-group" role="group">
+                <a href="{{ route('familias.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Volver
+                </a>
                 <a href="{{ route('familias.edit', $familia) }}" class="btn btn-secondary">
                     <i class="fas fa-edit me-1"></i> Editar
                 </a>
@@ -200,60 +203,10 @@
             </div>
         </div>
 
-        <!-- Información Adicional -->
+        <!-- Gráfico de Distribución por Edad -->
         <div class="row g-3 mt-3">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-chart-pie me-2"></i>Distribución por Edad
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="edadChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-info-circle me-2"></i>Información Adicional
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div class="text-center p-2 border rounded">
-                                    <h6 class="text-primary">{{ $familia->personas->where('edad', '>=', 18)->count() }}
-                                    </h6>
-                                    <small>Adultos</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-2 border rounded">
-                                    <h6 class="text-success">{{ $familia->personas->where('edad', '>=', 60)->count() }}
-                                    </h6>
-                                    <small>Adultos Mayores</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-2 border rounded">
-                                    <h6 class="text-warning">
-                                        {{ $familia->personas->where('edad', '>=', 12)->where('edad', '<', 18)->count() }}
-                                    </h6>
-                                    <small>Adolescentes</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-2 border rounded">
-                                    <h6 class="text-info">{{ $familia->personas->where('edad', '<', 12)->count() }}</h6>
-                                    <small>Niños</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-12">
+                <x-distribucion-edad-chart :distribucionEdad="$distribucionEdad" canvasId="edadChart" title="Distribución por Edad" />
             </div>
         </div>
 
@@ -357,42 +310,10 @@
     </div>
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         @if ($familia->latitud && $familia->longitud)
             <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
         @endif
         <script>
-            // Gráfico de distribución por edad
-            const ctx = document.getElementById('edadChart').getContext('2d');
-            const edadData = {
-                labels: ['Niños (0-11)', 'Adolescentes (12-17)', 'Adultos (18-59)', 'Adultos Mayores (60+)'],
-                datasets: [{
-                    data: [
-                        {{ $familia->personas->where('edad', '<', 12)->count() }},
-                        {{ $familia->personas->where('edad', '>=', 12)->where('edad', '<', 18)->count() }},
-                        {{ $familia->personas->where('edad', '>=', 18)->where('edad', '<', 60)->count() }},
-                        {{ $familia->personas->where('edad', '>=', 60)->count() }}
-                    ],
-                    backgroundColor: ['#17a2b8', '#ffc107', '#28a745', '#dc3545'],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            };
-
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: edadData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-
             @if ($familia->latitud && $familia->longitud)
                 // Mapa de Google
                 function initMap() {
