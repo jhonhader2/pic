@@ -24,6 +24,9 @@ class FamiliaService
 
         $this->syncPersonas($familia, $data['personas'] ?? []);
 
+        // Asegurar que el jefe esté marcado correctamente en la tabla pivot
+        $this->ensureJefeIsMarked($familia);
+
         return $familia;
     }
 
@@ -41,6 +44,9 @@ class FamiliaService
         ]);
 
         $this->syncPersonas($familia, $data['personas'] ?? []);
+
+        // Asegurar que el jefe esté marcado correctamente en la tabla pivot
+        $this->ensureJefeIsMarked($familia);
 
         return $familia;
     }
@@ -62,6 +68,7 @@ class FamiliaService
 
         foreach ($personas as $personaId) {
             $pivotData[$personaId] = [
+                'es_jefe' => ($personaId === $familia->jefe_persona_id),
                 'created_by' => Auth::id(),
             ];
         }
@@ -89,5 +96,35 @@ class FamiliaService
         }
 
         return !$query->exists();
+    }
+
+    private function ensureJefeIsMarked(Familia $familia): void
+    {
+        if (!$familia->jefe_persona_id) {
+            return;
+        }
+
+        // Marcar el jefe como es_jefe = true
+        DB::table('familia_personas')
+            ->where('familia_id', $familia->id)
+            ->where('persona_id', $familia->jefe_persona_id)
+            ->update(['es_jefe' => true]);
+
+        // Asegurar que el jefe esté en la tabla pivot
+        $exists = DB::table('familia_personas')
+            ->where('familia_id', $familia->id)
+            ->where('persona_id', $familia->jefe_persona_id)
+            ->exists();
+
+        if (!$exists) {
+            DB::table('familia_personas')->insert([
+                'familia_id' => $familia->id,
+                'persona_id' => $familia->jefe_persona_id,
+                'es_jefe' => true,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }

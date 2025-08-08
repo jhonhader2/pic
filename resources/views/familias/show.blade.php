@@ -140,23 +140,51 @@
                                                 <div>
                                                     <h6 class="mb-0">{{ $p->primer_nombre }} {{ $p->primer_apellido }}
                                                     </h6>
-                                                    <small class="text-muted">{{ $p->numero_documento }}</small>
+                                                    <small class="text-muted">
+                                                        {{ $p->numero_documento }} • {{ $p->edad ?? 'N/A' }} años
+                                                    </small>
                                                 </div>
                                             </div>
-                                            <div class="mt-1">
-                                                <small class="text-muted">
-                                                    {{ $p->edad ?? 'N/A' }} años •
-                                                    {{ $p->sexo?->name ?? 'N/A' }}
-                                                </small>
+                                            <div class="mt-2">
+                                                <div class="d-flex gap-1 flex-wrap">
+                                                    @if ($p->pivot->es_jefe)
+                                                        <span class="badge bg-primary">
+                                                            <i class="fas fa-crown me-1"></i>Jefe
+                                                        </span>
+                                                    @endif
+                                                    @if ($p->edad)
+                                                        @if ($p->edad < 12)
+                                                            <span class="badge" style="background-color: #17a2b8;">
+                                                                <i class="fas fa-baby me-1"></i>Niño
+                                                            </span>
+                                                        @elseif ($p->edad >= 12 && $p->edad < 18)
+                                                            <span class="badge"
+                                                                style="background-color: #ffc107; color: #000;">
+                                                                <i class="fas fa-child me-1"></i>Adolescente
+                                                            </span>
+                                                        @elseif ($p->edad >= 18 && $p->edad < 60)
+                                                            <span class="badge" style="background-color: #28a745;">
+                                                                <i class="fas fa-user me-1"></i>Adulto
+                                                            </span>
+                                                        @else
+                                                            <span class="badge" style="background-color: #dc3545;">
+                                                                <i class="fas fa-user-tie me-1"></i>Adulto Mayor
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                    @if ($p->sexo)
+                                                        @if (in_array($p->sexo_id, [13, 15]))
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-male me-1"></i>Masculino
+                                                            </span>
+                                                        @elseif (in_array($p->sexo_id, [14, 16]))
+                                                            <span class="badge bg-info">
+                                                                <i class="fas fa-female me-1"></i>Femenino
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="text-end">
-                                            @if ($p->pivot->es_jefe)
-                                                <span class="badge bg-primary">Jefe</span>
-                                            @endif
-                                            @if ($p->edad && $p->edad < 18)
-                                                <span class="badge bg-warning text-dark">Menor</span>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>

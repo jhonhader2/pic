@@ -37,6 +37,9 @@ class FamiliaController extends Controller
             'barrio',
             'jefe.tipoDocumento',
             'jefe.sexo',
+            'personas' => function ($query) {
+                $query->withPivot(['es_jefe', 'rol', 'created_by']);
+            },
             'personas.tipoDocumento',
             'personas.sexo',
             'encuestas.respuestas'
