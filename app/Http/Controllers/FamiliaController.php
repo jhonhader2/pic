@@ -33,7 +33,14 @@ class FamiliaController extends Controller
 
     public function show(Familia $familia)
     {
-        $familia->load(['barrio', 'jefe', 'personas']);
+        $familia->load([
+            'barrio',
+            'jefe.tipoDocumento',
+            'jefe.sexo',
+            'personas.tipoDocumento',
+            'personas.sexo',
+            'encuestas.respuestas'
+        ]);
         $personas = Persona::orderBy('primer_nombre')->get();
         return view('familias.show', compact('familia', 'personas'));
     }

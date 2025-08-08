@@ -38,10 +38,42 @@
                                     {{ $p->numero_documento }}</option>
                             @endforeach
                         </select>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            El jefe de familia no puede ser jefe de otra familia.
+                        </div>
                     </div>
 
+                    @push('styles')
+                        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+                            rel="stylesheet" />
+                        <link
+                            href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+                            rel="stylesheet" />
+                    @endpush
+
+                    @push('scripts')
+                        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+                        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+                        <script>
+                            $(function() {
+                                $('#jefe_persona_id').select2({
+                                    theme: 'bootstrap-5',
+                                    placeholder: '-- Seleccione --',
+                                    allowClear: true,
+                                    width: '100%'
+                                });
+                            });
+                        </script>
+                    @endpush
+
                     <div class="mt-3">
+                        <label class="form-label fw-semibold">Miembros de la familia</label>
                         <x-persona-selector :personas="$personas" :selected="[]" />
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            Selecciona los miembros de la familia. El jefe de familia se agregará automáticamente.
+                        </div>
                     </div>
 
                     <div class="mt-4">

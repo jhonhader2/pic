@@ -34,7 +34,7 @@ class UserPersonaSeeder extends Seeder
                     'segundo_apellido' => '',
                     'fecha_nacimiento' => '1985-03-15',
                     'sexo_id' => 13, // MASCULINO
-                    'identidad_genero_id' => 15, // HOMBRE
+                    'identidad_genero_id' => 16, // MUJER
                     'estado_civil_id' => 21, // CASADO
                     'telefono' => '6012345678',
                     'celular' => '3001234567',

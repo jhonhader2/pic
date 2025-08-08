@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Familia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FamiliaService
 {
@@ -46,13 +47,19 @@ class FamiliaService
 
     private function syncPersonas(Familia $familia, array $personas): void
     {
-        // Acepta lista de UUIDs simples
+        $pivotData = [];
+
+        // Agregar el jefe de familia si existe y no está en la lista
+        if ($familia->jefe_persona_id && !in_array($familia->jefe_persona_id, $personas)) {
+            $personas[] = $familia->jefe_persona_id;
+        }
+
+        // Si no hay personas y no hay jefe, limpiar la relación
         if (empty($personas)) {
             $familia->personas()->sync([]);
             return;
         }
 
-        $pivotData = [];
         foreach ($personas as $personaId) {
             $pivotData[$personaId] = [
                 'created_by' => Auth::id(),
@@ -60,5 +67,27 @@ class FamiliaService
         }
 
         $familia->personas()->sync($pivotData);
+    }
+
+    public function validateJefeUnico(string $jefePersonaId, ?string $excludeFamiliaId = null): bool
+    {
+        $query = Familia::where('jefe_persona_id', $jefePersonaId);
+
+        if ($excludeFamiliaId) {
+            $query->where('id', '!=', $excludeFamiliaId);
+        }
+
+        return !$query->exists();
+    }
+
+    public function validatePersonaUnicaEnFamilia(string $personaId, ?string $excludeFamiliaId = null): bool
+    {
+        $query = DB::table('familia_personas')->where('persona_id', $personaId);
+
+        if ($excludeFamiliaId) {
+            $query->where('familia_id', '!=', $excludeFamiliaId);
+        }
+
+        return !$query->exists();
     }
 }

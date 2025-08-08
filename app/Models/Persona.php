@@ -221,4 +221,16 @@ class Persona extends Model
     {
         return $this->belongsTo(Parametro::class, 'barrio_id');
     }
+
+    /**
+     * Get the edad attribute.
+     */
+    public function getEdadAttribute(): ?int
+    {
+        if (!$this->fecha_nacimiento) {
+            return null;
+        }
+
+        return \Carbon\Carbon::parse($this->fecha_nacimiento)->diffInYears(now());
+    }
 }

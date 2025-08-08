@@ -17,9 +17,9 @@
                         <thead>
                             <tr>
                                 <th>Código</th>
+                                <th>Jefe</th>
                                 <th>Dirección</th>
                                 <th>Barrio</th>
-                                <th>Jefe</th>
                                 <th class="text-end">Acciones</th>
                             </tr>
                         </thead>
@@ -27,9 +27,9 @@
                             @forelse ($familias as $familia)
                                 <tr>
                                     <td>{{ $familia->codigo }}</td>
+                                    <td>{{ $familia->jefe?->primer_nombre }} {{ $familia->jefe?->primer_apellido }}</td>
                                     <td>{{ $familia->direccion }}</td>
                                     <td>{{ $familia->barrio?->name }}</td>
-                                    <td>{{ $familia->jefe?->primer_nombre }} {{ $familia->jefe?->primer_apellido }}</td>
                                     <td class="text-end">
                                         <a href="{{ route('familias.show', $familia) }}"
                                             class="btn btn-sm btn-outline-primary">
