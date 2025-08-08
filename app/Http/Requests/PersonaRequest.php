@@ -49,8 +49,8 @@ class PersonaRequest extends FormRequest
 
         // Validación condicional para afiliación de salud
         if ($this->afiliacion_salud == '1') {
-            $rules['tipo_afiliacion_salud'] = ['nullable', 'integer', 'exists:parametros,id'];
-            $rules['eps'] = ['nullable', 'integer', 'exists:parametros,id'];
+            $rules['tipo_afiliacion_salud'] = ['required', 'integer', 'exists:parametros,id'];
+            $rules['eps'] = ['required', 'integer', 'exists:parametros,id'];
         }
 
         // Validación condicional para discapacidad
