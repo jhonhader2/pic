@@ -265,24 +265,24 @@
     <script>
         // Solución directa para dropdowns
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Inicializando dropdowns...');
+
 
             // Verificar si Bootstrap está disponible
             if (typeof bootstrap !== 'undefined') {
-                console.log('Bootstrap disponible, inicializando dropdowns...');
+
                 var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
                 dropdownElementList.forEach(function(dropdownToggleEl) {
                     new bootstrap.Dropdown(dropdownToggleEl);
                 });
             } else {
-                console.log('Bootstrap no disponible, usando fallback...');
+
                 // Fallback manual
                 var dropdowns = document.querySelectorAll('.dropdown-toggle');
                 dropdowns.forEach(function(dropdown) {
                     dropdown.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Dropdown clicked');
+
 
                         var menu = this.nextElementSibling;
                         if (menu && menu.classList.contains('dropdown-menu')) {
@@ -295,7 +295,7 @@
                             });
 
                             menu.classList.toggle('show');
-                            console.log('Menu toggled:', menu.classList.contains('show'));
+
                         }
                     });
                 });

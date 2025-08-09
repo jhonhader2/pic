@@ -24,6 +24,16 @@ class Familia extends Model
         'updated_by',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'latitud' => 'decimal:7',
+        'longitud' => 'decimal:7',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected static function boot()
     {
         parent::boot();

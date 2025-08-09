@@ -438,14 +438,14 @@
 
         // Solución manual para dropdowns
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Inicializando dropdowns manualmente...');
+
 
             // Agregar event listeners a todos los botones de dropdown
             document.querySelectorAll('.dropdown-toggle').forEach(function(button) {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Dropdown clicked:', this.id);
+
 
                     // Obtener el menú asociado
                     const dropdown = this.closest('.dropdown');
@@ -460,7 +460,7 @@
 
                     // Alternar el menú actual
                     menu.classList.toggle('show');
-                    console.log('Menu toggled:', menu.classList.contains('show'));
+
                 });
             });
 

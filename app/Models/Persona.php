@@ -60,6 +60,18 @@ class Persona extends Model
         'foto',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'fecha_nacimiento' => 'date',
+        'afiliacion_salud' => 'boolean',
+        'discapacidad' => 'boolean',
+        'atencion_integral_discapacidad' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected static function boot()
     {
         parent::boot();

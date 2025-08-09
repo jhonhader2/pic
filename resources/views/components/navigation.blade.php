@@ -85,16 +85,16 @@
         const dropdownMenu = userDropdown?.nextElementSibling;
 
         if (userDropdown && dropdownMenu) {
-            console.log('User dropdown encontrado:', userDropdown);
+
 
             userDropdown.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('User dropdown clicked');
+
 
                 // Toggle del menú
                 dropdownMenu.classList.toggle('show');
-                console.log('Menu visible:', dropdownMenu.classList.contains('show'));
+
             });
 
             // Cerrar al hacer clic fuera
@@ -104,7 +104,7 @@
                 }
             });
         } else {
-            console.log('User dropdown no encontrado');
+
         }
     });
 </script>

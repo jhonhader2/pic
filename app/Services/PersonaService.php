@@ -23,8 +23,16 @@ class PersonaService
     public function createPersonaOnly(array $data, ?User $createdBy = null): Persona
     {
         return DB::transaction(function () use ($data, $createdBy) {
+            // Crear usuario vacío primero
+            $user = User::create([
+                'name' => $this->buildNombreCompleto($data),
+                'email' => $data['numero_documento'] . '@temp.local', // Email temporal único
+                'password' => bcrypt('temp_password_' . uniqid()),
+                'email_verified_at' => null
+            ]);
+
             $personaData = $this->preparePersonaData($data);
-            $personaData['user_id'] = null; // No asociado a ningún usuario
+            $personaData['user_id'] = $user->id;
 
             return Persona::create($personaData);
         });
@@ -83,7 +91,7 @@ class PersonaService
             'discapacidad' => $this->parseBoolean($data['discapacidad'] ?? null),
             'tipo_discapacidad_id' => $this->getConditionalValue($data['discapacidad'] ?? null, $data['tipo_discapacidad'] ?? null),
             'atencion_integral_discapacidad' => $this->getConditionalBoolean($data['discapacidad'] ?? null, $data['atencion_integral_discapacidad'] ?? null),
-            'nombre_etnia' => $data['nombre_etnia'] ?? null,
+            'nombre_etnia' => $this->getConditionalEtniaName($data['pertenencia_etnica'] ?? null, $data['nombre_etnia'] ?? null),
             'direccion' => $data['direccion'],
         ];
     }
@@ -110,6 +118,19 @@ class PersonaService
     private function getConditionalBoolean($condition, $value): bool
     {
         return $this->parseBoolean($condition) && $this->parseBoolean($value);
+    }
+
+    /**
+     * Obtener nombre de etnia condicional
+     */
+    private function getConditionalEtniaName($pertenenciaEtnica, $nombreEtnia): ?string
+    {
+        // Si es "NO DEFINE" (ID 5) o vacío, no guardar nombre de etnia
+        if (!$pertenenciaEtnica || $pertenenciaEtnica == '5') {
+            return null;
+        }
+
+        return $nombreEtnia;
     }
 
     /**

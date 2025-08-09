@@ -6,7 +6,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Verificar si Chart.js está disponible
     if (typeof Chart === 'undefined') {
-        console.warn('Chart.js no está disponible');
+
         return;
     }
 

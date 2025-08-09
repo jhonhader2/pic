@@ -15,10 +15,9 @@
             $totalFamilias = \App\Models\Familia::count();
             $conJefe = \App\Models\Familia::whereNotNull('jefe_persona_id')->count();
             $conUbicacion = \App\Models\Familia::whereNotNull('latitud')->whereNotNull('longitud')->count();
-            $conTelefono = \App\Models\Familia::whereNotNull('telefono')->count();
         @endphp
         <div class="row g-3 mb-4">
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-primary text-white">
                     <div class="card-body text-center">
                         <i class="fas fa-home fa-2x mb-2"></i>
@@ -27,7 +26,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-success text-white">
                     <div class="card-body text-center">
                         <i class="fas fa-users fa-2x mb-2"></i>
@@ -36,7 +35,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-info text-white">
                     <div class="card-body text-center">
                         <i class="fas fa-map-marker-alt fa-2x mb-2"></i>
@@ -45,16 +44,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body text-center">
-                        <i class="fas fa-phone fa-2x mb-2"></i>
-                        <h4 class="mb-0">{{ $conTelefono }}</h4>
-                        <small>Con Teléfono</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-danger text-white">
                     <div class="card-body text-center">
                         <i class="fas fa-female fa-2x mb-2"></i>
@@ -110,9 +100,6 @@
                                     <td class="ps-3">
                                         <div class="d-flex align-items-center">
                                             <span class="badge bg-secondary me-2">{{ $familia->codigo }}</span>
-                                            @if ($familia->telefono)
-                                                <i class="fas fa-phone text-success" title="Tiene teléfono"></i>
-                                            @endif
                                             @if ($familia->latitud && $familia->longitud)
                                                 <i class="fas fa-map-marker-alt text-info ms-1" title="Tiene ubicación"></i>
                                             @endif
@@ -146,15 +133,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <div>
-                                            <strong>{{ Str::limit($familia->direccion, 30) }}</strong>
-                                            @if ($familia->telefono)
-                                                <br>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-phone me-1"></i>{{ $familia->telefono }}
-                                                </small>
-                                            @endif
-                                        </div>
+                                        <strong>{{ Str::limit($familia->direccion, 30) }}</strong>
                                     </td>
                                     <td>
                                         @if ($familia->barrio)

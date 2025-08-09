@@ -18,5 +18,4 @@ import './encuestas';
 import './dashboard';
 import './date-validation';
 import './auth';
-import './preguntas';
-import './personas'; 
+import './preguntas'; 

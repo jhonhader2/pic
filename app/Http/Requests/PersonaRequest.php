@@ -59,6 +59,12 @@ class PersonaRequest extends FormRequest
             $rules['atencion_integral_discapacidad'] = ['required', 'in:0,1'];
         }
 
+        // Validación condicional para nombre de etnia
+        // Si pertenece a una etnia específica (no es "NO DEFINE" = ID 5), requerir nombre
+        if ($this->pertenencia_etnica && $this->pertenencia_etnica != '5') {
+            $rules['nombre_etnia'] = ['required', 'string', 'max:255'];
+        }
+
         return $rules;
     }
 

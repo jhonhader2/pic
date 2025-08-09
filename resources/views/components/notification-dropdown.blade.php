@@ -104,7 +104,7 @@
                 });
             })
             .catch(error => {
-                console.error('Error cargando notificaciones:', error);
+
             });
     }
 
@@ -124,7 +124,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error marcando como leída:', error);
+
             });
     }
 
@@ -144,7 +144,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error marcando todas como leídas:', error);
+
             });
     }
 
@@ -170,7 +170,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error actualizando contador:', error);
+
             });
     }
 

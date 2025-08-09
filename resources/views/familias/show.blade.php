@@ -50,20 +50,7 @@
                                     <span class="text-end">{{ $familia->barrio?->name ?? 'No especificado' }}</span>
                                 </div>
                             </div>
-                            <div class="col-12">
-                                <div class="d-flex justify-content-between">
-                                    <strong>Teléfono:</strong>
-                                    <span class="text-end">
-                                        @if ($familia->telefono)
-                                            <a href="tel:{{ $familia->telefono }}" class="text-decoration-none">
-                                                <i class="fas fa-phone me-1"></i>{{ $familia->telefono }}
-                                            </a>
-                                        @else
-                                            No especificado
-                                        @endif
-                                    </span>
-                                </div>
-                            </div>
+
                             @if ($familia->latitud && $familia->longitud)
                                 <div class="col-12">
                                     <div class="d-flex justify-content-between">

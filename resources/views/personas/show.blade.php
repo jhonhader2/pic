@@ -335,7 +335,7 @@
                                         <strong>Email:</strong> {{ $persona->user->email }}
                                     </div>
                                     <div class="mb-2">
-                                        <strong>Registrado:</strong> {{ $persona->user->created_at->format('d/m/Y H:i') }}
+                                        <strong>Registrado:</strong> {{ $persona->user->created_at->diffForHumans() }}
                                     </div>
                                     @if ($persona->user->is_admin)
                                         <span class="badge bg-danger">Administrador</span>
@@ -357,11 +357,11 @@
                             <div class="card-body">
                                 <div class="mb-2">
                                     <strong>Fecha de creación:</strong><br>
-                                    <small>{{ $persona->created_at->format('d/m/Y H:i:s') }}</small>
+                                    <small>{{ $persona->created_at->diffForHumans() }}</small>
                                 </div>
                                 <div class="mb-2">
                                     <strong>Última actualización:</strong><br>
-                                    <small>{{ $persona->updated_at->format('d/m/Y H:i:s') }}</small>
+                                    <small>{{ $persona->updated_at->diffForHumans() }}</small>
                                 </div>
                                 <div class="mb-2">
                                     <strong>ID del registro:</strong><br>
@@ -469,7 +469,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+
                     alert('Error al eliminar la persona');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar';

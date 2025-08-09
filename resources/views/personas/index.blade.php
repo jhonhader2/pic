@@ -289,7 +289,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+
                     alert('Error al eliminar la persona');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar';

@@ -96,11 +96,28 @@ class PersonaController extends BaseController
         }
 
         if ($request->ajax()) {
-            return $this->executeJsonOperation(
-                fn() => $this->personaService->createPersonaByRole($request->validated()),
-                'Persona creada exitosamente.',
-                'Error al crear la persona'
-            );
+            try {
+                $result = $this->personaService->createPersonaByRole($request->validated());
+
+                // Si el resultado es un User (admin creando usuario), obtener la persona
+                $persona = $result instanceof User ? $result->persona : $result;
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Persona creada exitosamente.',
+                    'persona' => [
+                        'id' => $persona->id,
+                        'primer_nombre' => $persona->primer_nombre,
+                        'primer_apellido' => $persona->primer_apellido,
+                        'numero_documento' => $persona->numero_documento
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear la persona: ' . $e->getMessage()
+                ], 500);
+            }
         }
 
         return $this->executeTransaction(
